@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# 聚类数HLN:6 HT:6 mouse_thymus:8 mouse_spleen:5 mouse_brain:18 3M:5 misar？
+# 聚类数HLN:6 HT:6 mouse_thymus:8 mouse_spleen:5 mouse_brain:18 3M:5 misar:16
 # 定义结果保存根目录的绝对路径
 RESULT_ROOT="/home/users/nus/e1503317/projects/dmeng/zhlin/SMOBench/Results/adata/SpatialGlue"
 
@@ -51,14 +51,15 @@ RESULT_ROOT="/home/users/nus/e1503317/projects/dmeng/zhlin/SMOBench/Results/adat
 #   --dataset Human_Tonsils/S3 \
 #   --cluster_nums 6
 
-# # Mouse_Embryos_S1 (withGT RNA+ATAC)
+# # Mouse_Embryos_S1 (withGT RNA+ATAC) - MISAR dataset with 16 clusters
 # python ../../../Scripts/intergration/SpatialGlue/run_SpatialGlue.py \
 #   --data_type MISAR \
 #   --RNA_path ../../../Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E11/adata_RNA.h5ad \
 #   --ATAC_path ../../../Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E11/adata_ATAC.h5ad \
 #   --save_path "${RESULT_ROOT}/MISAR_S1/E11/SpatialGlue_MISAR_S1_E11.h5ad" \
 #   --method SpatialGlue \
-#   --dataset Mouse_Embryos_S1/E11
+#   --dataset Mouse_Embryos_S1/E11 \
+#   --cluster_nums 16
 
 # python ../../../Scripts/intergration/SpatialGlue/run_SpatialGlue.py \
 #   --data_type MISAR \
@@ -66,7 +67,8 @@ RESULT_ROOT="/home/users/nus/e1503317/projects/dmeng/zhlin/SMOBench/Results/adat
 #   --ATAC_path ../../../Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E13/adata_ATAC.h5ad \
 #   --save_path "${RESULT_ROOT}/MISAR_S1/E13/SpatialGlue_MISAR_S1_E13.h5ad" \
 #   --method SpatialGlue \
-#   --dataset Mouse_Embryos_S1/E13
+#   --dataset Mouse_Embryos_S1/E13 \
+#   --cluster_nums 16
 
 # python ../../../Scripts/intergration/SpatialGlue/run_SpatialGlue.py \
 #   --data_type MISAR \
@@ -74,7 +76,8 @@ RESULT_ROOT="/home/users/nus/e1503317/projects/dmeng/zhlin/SMOBench/Results/adat
 #   --ATAC_path ../../../Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E15/adata_ATAC.h5ad \
 #   --save_path "${RESULT_ROOT}/MISAR_S1/E15/SpatialGlue_MISAR_S1_E15.h5ad" \
 #   --method SpatialGlue \
-#   --dataset Mouse_Embryos_S1/E15
+#   --dataset Mouse_Embryos_S1/E15 \
+#   --cluster_nums 16
 
 # python ../../../Scripts/intergration/SpatialGlue/run_SpatialGlue.py \
 #   --data_type MISAR \
@@ -82,16 +85,18 @@ RESULT_ROOT="/home/users/nus/e1503317/projects/dmeng/zhlin/SMOBench/Results/adat
 #   --ATAC_path ../../../Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E18/adata_ATAC.h5ad \
 #   --save_path "${RESULT_ROOT}/MISAR_S1/E18/SpatialGlue_MISAR_S1_E18.h5ad" \
 #   --method SpatialGlue \
-#   --dataset Mouse_Embryos_S1/E18
+#   --dataset Mouse_Embryos_S1/E18 \
+#   --cluster_nums 16
 
-# # Mouse_Embryos_S2 (withGT RNA+ATAC)
+# # Mouse_Embryos_S2 (withGT RNA+ATAC) - MISAR dataset with 16 clusters
 # python ../../../Scripts/intergration/SpatialGlue/run_SpatialGlue.py \
 #   --data_type MISAR \
 #   --RNA_path ../../../Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E11/adata_RNA.h5ad \
 #   --ATAC_path ../../../Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E11/adata_ATAC.h5ad \
 #   --save_path "${RESULT_ROOT}/MISAR_S2/E11/SpatialGlue_MISAR_S2_E11.h5ad" \
 #   --method SpatialGlue \
-#   --dataset Mouse_Embryos_S2/E11
+#   --dataset Mouse_Embryos_S2/E11 \
+#   --cluster_nums 16
 
 # python ../../../Scripts/intergration/SpatialGlue/run_SpatialGlue.py \
 #   --data_type MISAR \
@@ -99,7 +104,8 @@ RESULT_ROOT="/home/users/nus/e1503317/projects/dmeng/zhlin/SMOBench/Results/adat
 #   --ATAC_path ../../../Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E13/adata_ATAC.h5ad \
 #   --save_path "${RESULT_ROOT}/MISAR_S2/E13/SpatialGlue_MISAR_S2_E13.h5ad" \
 #   --method SpatialGlue \
-#   --dataset Mouse_Embryos_S2/E13
+#   --dataset Mouse_Embryos_S2/E13 \
+#   --cluster_nums 16
 
 # python ../../../Scripts/intergration/SpatialGlue/run_SpatialGlue.py \
 #   --data_type MISAR \
@@ -107,7 +113,8 @@ RESULT_ROOT="/home/users/nus/e1503317/projects/dmeng/zhlin/SMOBench/Results/adat
 #   --ATAC_path ../../../Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E15/adata_ATAC.h5ad \
 #   --save_path "${RESULT_ROOT}/MISAR_S2/E15/SpatialGlue_MISAR_S2_E15.h5ad" \
 #   --method SpatialGlue \
-#   --dataset Mouse_Embryos_S2/E15
+#   --dataset Mouse_Embryos_S2/E15 \
+#   --cluster_nums 16
 
 # python ../../../Scripts/intergration/SpatialGlue/run_SpatialGlue.py \
 #   --data_type MISAR \
@@ -115,7 +122,8 @@ RESULT_ROOT="/home/users/nus/e1503317/projects/dmeng/zhlin/SMOBench/Results/adat
 #   --ATAC_path ../../../Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E18/adata_ATAC.h5ad \
 #   --save_path "${RESULT_ROOT}/MISAR_S2/E18/SpatialGlue_MISAR_S2_E18.h5ad" \
 #   --method SpatialGlue \
-#   --dataset Mouse_Embryos_S2/E18
+#   --dataset Mouse_Embryos_S2/E18 \
+#   --cluster_nums 16
 
 # Mouse_Spleen (woGT RNA+ADT)
 python ../../../Scripts/intergration/SpatialGlue/run_SpatialGlue.py \

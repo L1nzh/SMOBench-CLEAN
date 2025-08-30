@@ -1,0 +1,16 @@
+asw_celltype,0.61
+graph_clisi,0.79
+ARI,0.30
+NMI,0.47
+FMI,0.51
+Silhouette Coefficient,0.35
+Calinski-Harabaz Index,994.0
+Davies-Bouldin Index,1.27
+Purity,0.85
+AMI,0.47
+Homogeneity,0.55
+Completeness,0.40
+V-measure,0.47
+F-measure,0.44
+Jaccard Index,0.34
+Dice Index,0.44

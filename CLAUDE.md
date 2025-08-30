@@ -5,6 +5,7 @@ These files MUST be present and referenced in every conversation:
 - `CLAUDE.md` - This file with development standards
 - `docs/brief.md` - Project brief and research objectives
 - `docs/workflow.md` - Research workflow and experimental processes
+- `docs/evaluation.md` - Comprehensive evaluation metrics and framework
 - `docs/status.md` - Current research status and progress
 - `docs/setup.md` - Environment setup and installation guide
 
@@ -87,17 +88,25 @@ When encountering GPU memory issues:
 - **Output**: Store results in adata.obs with method-specific keys
 - **Interface**: Use Utils/SMOBench_clustering.py universal function
 
-### Evaluation Metrics
-#### With Ground Truth
-- **ARI**: Adjusted Rand Index (clustering accuracy)
-- **NMI**: Normalized Mutual Information 
-- **FMI**: Fowlkes-Mallows Index
-- **Silhouette Score**: Cluster cohesion quality
+### Evaluation Metrics Framework
+#### Three Categories of Metrics
+- **Spatial Coherence (SC)**: Moran's I, Geary's C
+- **Biological Conservation (BioC)**: Clustering accuracy and quality metrics  
+- **Batch Effect Removal (BER)**: Batch mixing metrics (horizontal/mosaic only)
 
-#### Without Ground Truth
-- **Silhouette Score**: Unsupervised cluster quality
-- **Moran's I**: Spatial autocorrelation of clusters
-- **Spatial Consistency**: Neighborhood cluster agreement
+#### Task-Specific Evaluation
+- **Vertical Integration**: BioC + SC (19 metrics with GT, 5 without GT)
+- **Horizontal/Mosaic Integration**: BioC + SC + BER
+
+#### With Ground Truth (19 metrics)
+- **Clustering Accuracy**: ARI, NMI, AMI, FMI, Purity, Homogeneity, Completeness, V-measure, F-measure, Jaccard Index, Dice Index
+- **Quality Metrics**: Silhouette Coefficient, Calinski-Harabasz Index, Davies-Bouldin Index
+- **Additional BioC**: ASW (cell type), Graph cLISI
+- **Spatial Coherence**: Moran's I, Geary's C
+
+#### Without Ground Truth (5 metrics)
+- **Quality Metrics**: Silhouette Coefficient, Calinski-Harabasz Index, Davies-Bouldin Index  
+- **Spatial Coherence**: Moran's I, Geary's C
 
 ### Development Environment
 - **Conda Environment**: `smobench` with spatial omics dependencies

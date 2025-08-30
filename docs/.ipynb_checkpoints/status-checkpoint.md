@@ -15,7 +15,6 @@
 - **CLAUDE.md**: Comprehensive development standards and project guidelines
 - **docs/brief.md**: Detailed project overview and research objectives
 - **docs/workflow.md**: Complete experimental workflow and execution pipeline
-- **docs/evaluation.md**: Comprehensive evaluation metrics and framework
 - **docs/setup.md**: Environment configuration and installation instructions
 
 #### Code Organization Assessment
@@ -24,22 +23,12 @@
 - **Evaluation Framework**: Analyzed current evaluation code in Eval/ directory
 - **Utilities Review**: Assessed universal clustering requirements
 
-### Recently Completed ✅
-
-#### Project Structure Optimization  
-- **Script Reorganization**: ✅ Moved all evaluation and visualization scripts to Scripts/
-- **Universal Clustering**: ✅ Implemented unified clustering interface in Utils/SMOBench_clustering.py
-- **PBS Template System**: ✅ Created automated batch job generation framework  
-- **Evaluation Framework**: ✅ Comprehensive metrics calculator with 19 metrics for withGT, 5 for woGT
-- **Results Structure**: ✅ Created organized Results/evaluation/ directory with task-based organization
-
-#### Comprehensive Evaluation System
-- **Evaluation Categories**: ✅ Spatial Coherence (SC), Biological Conservation (BioC), Batch Effect Removal (BER)
-- **Task-Specific Metrics**: ✅ Vertical (BioC+SC), Horizontal/Mosaic (BioC+SC+BER)
-- **Implementation**: ✅ Scripts/evaluation/metrics_calculator.py with full metric calculations
-- **Documentation**: ✅ Complete evaluation framework in docs/evaluation.md
-
 ### In Progress 🔄
+
+#### Project Structure Optimization
+- **Script Reorganization**: Moving scattered scripts from Eval/ and Methods/ to Scripts/
+- **Universal Clustering**: Implementing unified clustering interface for all methods
+- **PBS Template System**: Creating automated batch job generation framework
 
 #### Method Integration Standardization
 - **SpatialGlue**: Existing implementation in Scripts/integration/SpatialGlue/

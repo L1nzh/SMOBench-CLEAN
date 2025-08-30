@@ -103,40 +103,159 @@ For leiden/louvain methods:
 - Range: 0.1 to 3.0 with 0.01 increments
 - Early stopping when target cluster count is achieved
 
-## Phase 4: Evaluation and Metrics Calculation
+## Phase 4: Comprehensive Evaluation Pipeline
 
-### 4.1 Ground Truth Evaluation (withGT datasets)
+### 4.1 Evaluation Framework Overview
+
+SMOBench employs three categories of evaluation metrics:
+
+1. **Spatial Coherence (SC)**: Moran's I, Geary's C  
+2. **Biological Conservation (BioC)**: Clustering accuracy and quality metrics
+3. **Batch Effect Removal (BER)**: Batch mixing metrics (horizontal/mosaic only)
+
+**Task-Specific Evaluation**:
+- **Vertical Integration**: BioC + SC (19 metrics with GT, 5 without GT)
+- **Horizontal/Mosaic Integration**: BioC + SC + BER
+
+### 4.2 Vertical Integration Evaluation
+
+#### 4.2.1 With Ground Truth Datasets (Full BioC + SC)
 ```python
-conda run -n smobench python Scripts/evaluation/eval_with_gt.py \
-  --adata_path Results/adata/SpatialGlue/HT/S1/SpatialGlue_HT_S1_clustered.h5ad \
-  --gt_column 'final_annot' \
-  --output_path Results/metrics/SpatialGlue_HT_S1_with_gt.csv
+# Calculate comprehensive metrics (19 metrics)
+conda run -n smobench python Scripts/evaluation/metrics_calculator.py \
+  --adata Results/adata/SpatialGlue/HT/S1/SpatialGlue_HT_S1_clustered.h5ad \
+  --cluster-keys leiden louvain kmeans mclust \
+  --task vertical \
+  --embedding-key spatial_emb \
+  --gt-key final_annot \
+  --output-dir Results/evaluation/
 ```
 
-Metrics calculated:
-- ARI (Adjusted Rand Index)
-- NMI (Normalized Mutual Information)  
-- FMI (Fowlkes-Mallows Index)
-- Silhouette Score
+**Metrics Calculated** (19 total):
+- **Clustering Accuracy**: ARI, NMI, AMI, FMI, Purity, Homogeneity, Completeness, V-measure, F-measure, Jaccard Index, Dice Index
+- **Quality Metrics**: Silhouette Coefficient, Calinski-Harabasz Index, Davies-Bouldin Index
+- **Additional BioC**: ASW (cell type), Graph cLISI  
+- **Spatial Coherence**: Moran's I, Geary's C
 
-### 4.2 Unsupervised Evaluation (woGT datasets)
+#### 4.2.2 Without Ground Truth Datasets (Limited BioC + SC)
 ```python
-conda run -n smobench python Scripts/evaluation/eval_without_gt.py \
-  --adata_path Results/adata/SpatialGlue/MS/Spleen1/SpatialGlue_MS_Spleen1_clustered.h5ad \
-  --output_path Results/metrics/SpatialGlue_MS_Spleen1_without_gt.csv
+# Calculate limited metrics (5 metrics)
+conda run -n smobench python Scripts/evaluation/metrics_calculator.py \
+  --adata Results/adata/SpatialGlue/MS/Spleen1/SpatialGlue_MS_Spleen1_clustered.h5ad \
+  --cluster-keys leiden louvain kmeans mclust \
+  --task vertical \
+  --embedding-key spatial_emb \
+  --output-dir Results/evaluation/
 ```
 
-Metrics calculated:
-- Silhouette Score
-- Moran's I (spatial autocorrelation)
-- Spatial Consistency Index
+**Metrics Calculated** (5 total):
+- **Quality Metrics**: Silhouette Coefficient, Calinski-Harabasz Index, Davies-Bouldin Index
+- **Spatial Coherence**: Moran's I, Geary's C
 
-### 4.3 Batch Processing
+### 4.3 Horizontal/Mosaic Integration Evaluation
+
+```python
+# Calculate full metrics including BER
+conda run -n smobench python Scripts/evaluation/metrics_calculator.py \
+  --adata Results/adata/Method/Dataset/clustered.h5ad \
+  --cluster-keys leiden louvain kmeans mclust \
+  --task horizontal \
+  --embedding-key integrated_emb \
+  --gt-key cell_type \
+  --batch-key batch \
+  --output-dir Results/evaluation/
+```
+
+**Additional BER Metrics**:
+- ASW (batch), Graph iLISI, kBET, Graph Connectivity
+
+### 4.4 Batch Evaluation Processing
+
+#### 4.4.1 Systematic Dataset Processing
 ```bash
-# Evaluate all results systematically
-conda run -n smobench python Scripts/evaluation/batch_evaluate.py \
-  --results_dir Results/adata/ \
-  --output_dir Results/metrics/
+# Process all results by task type
+for task in vertical horizontal mosaic; do
+  for gt_status in withGT woGT; do
+    conda run -n smobench python Scripts/evaluation/batch_evaluate.py \
+      --task $task \
+      --gt_status $gt_status \
+      --results_dir Results/adata/ \
+      --output_dir Results/evaluation/$task/$gt_status/
+  done
+done
+```
+
+#### 4.4.2 Individual Method Evaluation Script
+```python
+#!/usr/bin/env python3
+import scanpy as sc
+from Scripts.evaluation.metrics_calculator import evaluate_method_result
+
+# Example: Evaluate SpatialGlue on Human Tonsils S1
+results = evaluate_method_result(
+    adata_path='Results/adata/SpatialGlue/HT/S1/SpatialGlue_HT_S1_clustered.h5ad',
+    cluster_keys=['leiden', 'louvain', 'kmeans', 'mclust'],
+    task='vertical',
+    embedding_key='spatial_emb', 
+    gt_key='final_annot',
+    output_dir='Results/evaluation/'
+)
+```
+
+### 4.5 Result File Structure
+
+Evaluation results are saved with the following structure:
+```
+Results/evaluation/
+├── vertical/
+│   ├── withGT/
+│   │   ├── method_results/
+│   │   │   ├── SpatialGlue_HT_S1_leiden_metrics.csv
+│   │   │   ├── SpatialGlue_HT_S1_louvain_metrics.csv
+│   │   │   └── ... (all method-dataset-clustering combinations)
+│   │   └── aggregated/
+│   │       ├── vertical_withGT_summary.csv
+│   │       └── vertical_withGT_rankings.csv
+│   └── woGT/
+│       ├── method_results/
+│       └── aggregated/
+├── horizontal/
+└── mosaic/
+```
+
+#### Example Output Files
+
+**With Ground Truth** (SpatialGlue_HT_S1_leiden_metrics.csv):
+```csv
+Metric,Value
+asw_celltype,0.511
+graph_clisi,0.886  
+ARI,0.104
+NMI,0.274
+FMI,0.313
+Silhouette Coefficient,0.147
+Calinski-Harabasz Index,893.968
+Davies-Bouldin Index,1.673
+Purity,0.750
+AMI,0.272
+Homogeneity,0.450
+Completeness,0.197
+V-measure,0.274
+F-measure,0.241
+Jaccard Index,0.137
+Dice Index,0.241
+Moran Index,0.448
+Geary C,0.554
+```
+
+**Without Ground Truth** (SpatialGlue_MS_Spleen1_leiden_metrics.csv):
+```csv
+Metric,Value
+Silhouette Coefficient,0.147
+Calinski-Harabasz Index,893.968
+Davies-Bouldin Index,1.673
+Moran Index,0.448
+Geary C,0.554
 ```
 
 ## Phase 5: Result Aggregation and Analysis

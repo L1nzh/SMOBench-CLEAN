@@ -1,0 +1,27 @@
+#!/bin/bash
+#PBS -N $TASK_NAME
+#PBS -l nodes=1:ppn=8:gpus=1
+#PBS -l mem=32gb
+#PBS -l walltime=24:00:00
+#PBS -j oe
+#PBS -o $LOG_PATH
+
+# Load environment and navigate to working directory
+source activate smobench
+cd /home/zhenghong/SMOBench-CLEAN
+
+# Handle duplicate gene names (apply to all datasets)
+export PYTHONPATH="/home/zhenghong/SMOBench-CLEAN"
+
+# Execute method with specified parameters
+conda run -n smobench python $SCRIPT_PATH \
+  --data_type $DATA_TYPE \
+  --RNA_path $RNA_PATH \
+  --ADT_path $ADT_PATH \
+  --ATAC_path $ATAC_PATH \
+  --save_path $SAVE_PATH \
+  --device $DEVICE \
+  --seed $SEED \
+  --n_clusters $N_CLUSTERS
+
+echo "Job completed for $TASK_NAME"

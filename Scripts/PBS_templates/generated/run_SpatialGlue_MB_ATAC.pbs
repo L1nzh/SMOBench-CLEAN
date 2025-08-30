@@ -1,0 +1,27 @@
+#!/bin/bash
+#PBS -N SpatialGlue_MB_ATAC
+#PBS -l nodes=1:ppn=8:gpus=1
+#PBS -l mem=32gb
+#PBS -l walltime=24:00:00
+#PBS -j oe
+#PBS -o Results/logs/SpatialGlue_MB_ATAC.log
+
+# Load environment and navigate to working directory
+source activate smobench
+cd /home/zhenghong/SMOBench-CLEAN
+
+# Handle duplicate gene names (apply to all datasets)
+export PYTHONPATH="/home/zhenghong/SMOBench-CLEAN"
+
+# Execute method with specified parameters
+conda run -n smobench python Scripts/integration/SpatialGlue/run_SpatialGlue.py \
+  --data_type Spatial-epigenome-transcriptome \
+  --RNA_path Dataset/woGT/RNA_ATAC/Mouse_Brain/Mouse_Brain_ATAC/adata_RNA.h5ad \
+  --ADT_path  \
+  --ATAC_path Dataset/woGT/RNA_ATAC/Mouse_Brain/Mouse_Brain_ATAC/adata_peaks_normalized.h5ad \
+  --save_path Results/adata/SpatialGlue/MB/ATAC/SpatialGlue_MB_ATAC.h5ad \
+  --device cuda:0 \
+  --seed 2024 \
+  --n_clusters 8
+
+echo "Job completed for SpatialGlue_MB_ATAC"

@@ -1,0 +1,3 @@
+TASK_NAME,SCRIPT_PATH,DATA_TYPE,RNA_PATH,ADT_PATH,ATAC_PATH,SAVE_PATH,LOG_PATH,DEVICE,SEED,N_CLUSTERS
+SpatialGlue_HT_S1,Scripts/integration/SpatialGlue/run_SpatialGlue.py,10x,Dataset/withGT/RNA_ADT/Human_Tonsils/S1/adata_RNA.h5ad,Dataset/withGT/RNA_ADT/Human_Tonsils/S1/adata_ADT.h5ad,,Results/adata/SpatialGlue/HT/S1/SpatialGlue_HT_S1.h5ad,Results/logs/SpatialGlue_HT_S1.log,cuda:0,2024,6
+SpatialGlue_MB_ATAC,Scripts/integration/SpatialGlue/run_SpatialGlue.py,Spatial-epigenome-transcriptome,Dataset/woGT/RNA_ATAC/Mouse_Brain/Mouse_Brain_ATAC/adata_RNA.h5ad,,Dataset/woGT/RNA_ATAC/Mouse_Brain/Mouse_Brain_ATAC/adata_peaks_normalized.h5ad,Results/adata/SpatialGlue/MB/ATAC/SpatialGlue_MB_ATAC.h5ad,Results/logs/SpatialGlue_MB_ATAC.log,cuda:0,2024,8

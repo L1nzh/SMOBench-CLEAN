@@ -175,12 +175,44 @@ python -m ipykernel install --user --name smobench --display-name "SMOBench"
 ### 2. Git Configuration
 
 ```bash
-git config --global user.name "Your Name"
+git config --global user.name "L1nzh"
 git config --global user.email "your.email@domain.com"
 
-# Initialize git if not already done
-git init
-git remote add origin <repository_url>
+# Repository setup (SMOBench-CLEAN)
+git remote add origin https://github.com/L1nzh/SMOBench-CLEAN.git
+
+# For push operations, use personal access token when prompted for password
+# Token stored securely - do not commit sensitive credentials to repository
+```
+
+### 3. Conda Environment Management
+
+**Standard Package Installation:**
+```bash
+# Activate environment first
+conda activate smobench
+
+# Install packages using conda (preferred)
+conda install package_name
+
+# Install using pip if not available in conda
+pip install package_name
+```
+
+**Environment Modification (when conda environment has issues):**
+```bash
+# Activate environment first
+conda activate smobench
+
+# Use python -m pip for environment updates
+python -m pip install package_name
+python -m pip uninstall package_name
+
+# For upgrading existing packages
+python -m pip install --upgrade package_name
+
+# Force reinstall if needed
+python -m pip install --force-reinstall package_name
 ```
 
 ## Testing Installation

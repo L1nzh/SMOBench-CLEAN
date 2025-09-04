@@ -127,7 +127,7 @@ def _mclust_R(adata, num_cluster, used_obsm='emb', random_seed=2024):
         mclust_labels = np.array(res[-2])  # Cluster assignments are in res[-2]
         
         # Store results
-        adata.obs['mclust'] = mclust_labels.astype(int).astype('category')
+        adata.obs['mclust'] = pd.Categorical(mclust_labels.astype(int))
         
         return adata
         

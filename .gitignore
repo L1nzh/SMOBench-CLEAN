@@ -1,3 +1,37 @@
+# Dataset files - exclude large data files from repository
+SMOBench_Data.tar.gz
 Dataset/
 Results/
 *.h5ad
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# R history files
+.Rhistory
+.RData
+.Ruserdata
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# PBS and job submission files
+*.pbs
+*.out
+*.err
+
+# Backup files
+*.bak
+backup/

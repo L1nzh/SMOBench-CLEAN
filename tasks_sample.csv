@@ -1,3 +1,12 @@
-TASK_NAME,SCRIPT_PATH,DATA_TYPE,RNA_PATH,ADT_PATH,ATAC_PATH,SAVE_PATH,LOG_PATH,DEVICE,SEED,N_CLUSTERS
-SpatialGlue_HT_S1,Scripts/integration/SpatialGlue/run_SpatialGlue.py,10x,Dataset/withGT/RNA_ADT/Human_Tonsils/S1/adata_RNA.h5ad,Dataset/withGT/RNA_ADT/Human_Tonsils/S1/adata_ADT.h5ad,,Results/adata/SpatialGlue/HT/S1/SpatialGlue_HT_S1.h5ad,Results/logs/SpatialGlue_HT_S1.log,cuda:0,2024,6
-SpatialGlue_MB_ATAC,Scripts/integration/SpatialGlue/run_SpatialGlue.py,Spatial-epigenome-transcriptome,Dataset/woGT/RNA_ATAC/Mouse_Brain/Mouse_Brain_ATAC/adata_RNA.h5ad,,Dataset/woGT/RNA_ATAC/Mouse_Brain/Mouse_Brain_ATAC/adata_peaks_normalized.h5ad,Results/adata/SpatialGlue/MB/ATAC/SpatialGlue_MB_ATAC.h5ad,Results/logs/SpatialGlue_MB_ATAC.log,cuda:0,2024,8
+TASK_NAME,METHOD,SCRIPT_PATH,DATA_TYPE,RNA_PATH,ADT_PATH,ATAC_PATH,SAVE_PATH,LOG_PATH,DEVICE,SEED,N_CLUSTERS,BASH_SCRIPT
+# Vertical Integration Tasks (RNA + ADT)
+SpatialGlue_HT_S1,SpatialGlue,Scripts/integration/SpatialGlue/run_SpatialGlue.py,10x,Dataset/withGT/RNA_ADT/Human_Tonsils/S1/adata_RNA.h5ad,Dataset/withGT/RNA_ADT/Human_Tonsils/S1/adata_ADT.h5ad,,Results/adata/SpatialGlue_HT_S1.h5ad,Results/logs/SpatialGlue_HT_S1.log,cuda:0,2024,6,Scripts/integration/SpatialGlue/run.sh
+PRAGA_HT_S2,PRAGA,Scripts/integration/PRAGA/run_PRAGA.py,10x,Dataset/withGT/RNA_ADT/Human_Tonsils/S2/adata_RNA.h5ad,Dataset/withGT/RNA_ADT/Human_Tonsils/S2/adata_ADT.h5ad,,Results/adata/PRAGA_HT_S2.h5ad,Results/logs/PRAGA_HT_S2.log,cuda:0,2024,6,Scripts/integration/PRAGA/run.sh
+SpaMosaic_HLN_A1,SpaMosaic,Scripts/integration/SpaMosaic/run_spamosaic.py,10x,Dataset/withGT/RNA_ADT/Human_Lymph_Nodes/A1/adata_RNA.h5ad,Dataset/withGT/RNA_ADT/Human_Lymph_Nodes/A1/adata_ADT.h5ad,,Results/adata/SpaMosaic_HLN_A1.h5ad,Results/logs/SpaMosaic_HLN_A1.log,cuda:0,2024,8,Scripts/integration/SpaMosaic/run.sh
+
+# Vertical Integration Tasks (RNA + ATAC)
+SpatialGlue_MB_ATAC,SpatialGlue,Scripts/integration/SpatialGlue/run_SpatialGlue.py,Spatial-epigenome-transcriptome,Dataset/woGT/RNA_ATAC/Mouse_Brain/Mouse_Brain_ATAC/adata_RNA.h5ad,,Dataset/woGT/RNA_ATAC/Mouse_Brain/Mouse_Brain_ATAC/adata_peaks_normalized.h5ad,Results/adata/SpatialGlue_MB_ATAC.h5ad,Results/logs/SpatialGlue_MB_ATAC.log,cuda:0,2024,8,Scripts/integration/SpatialGlue/run.sh
+PRAGA_SPOTS_S1,PRAGA,Scripts/integration/PRAGA/run_PRAGA.py,Spatial-epigenome-transcriptome,Dataset/woGT/RNA_ATAC/SPOTS/S1/adata_RNA.h5ad,,Dataset/woGT/RNA_ATAC/SPOTS/S1/adata_ATAC.h5ad,Results/adata/PRAGA_SPOTS_S1.h5ad,Results/logs/PRAGA_SPOTS_S1.log,cuda:0,2024,10,Scripts/integration/PRAGA/run.sh
+
+# Simulation Data Tasks (3M dataset)
+SpaMV_3M_Sim,SpaMV,Scripts/integration/SpaMV/run_SpaMV.py,simulation,Dataset/withGT/3M_Simulation/adata_RNA.h5ad,Dataset/withGT/3M_Simulation/adata_ADT.h5ad,Dataset/withGT/3M_Simulation/adata_ATAC.h5ad,Results/adata/SpaMV_3M_Sim.h5ad,Results/logs/SpaMV_3M_Sim.log,cuda:0,2024,12,Scripts/integration/SpaMV/run.sh

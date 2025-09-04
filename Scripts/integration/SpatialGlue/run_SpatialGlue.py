@@ -1,5 +1,3 @@
-# /home/users/nus/e1503317/projects/dmeng/zhlin/SMOBench/scripts/intergration/SpatialGlue/run_SpatialGlue.py
-
 import os
 import torch
 import pandas as pd
@@ -176,7 +174,7 @@ if __name__ == "__main__":
     parser.add_argument('--ATAC_path', type=str, default='', help='Path to ATAC adata')
     parser.add_argument('--save_path', type=str, required=True, help='Path to save integrated adata')
     parser.add_argument('--seed', type=int, default=2022, help='Random seed')
-    parser.add_argument('--device', type=str, default='cuda:1', help='Device to use, e.g. cuda:0 or cpu')
+    parser.add_argument('--device', type=str, default='cuda:0', help='Device to use, e.g. cuda:0 or cpu')
 
     parser.add_argument('--method', type=str, default='SpatialGlue', help='Method name for plotting')
     parser.add_argument('--dataset', type=str, default='', help='Dataset name, e.g. Human_Lymph_Nodes/A1. If not provided, auto-extracted from paths.')

@@ -121,17 +121,46 @@ When encountering GPU memory issues:
 - **Scripts**: `run_{method}.py` and `run_{method}.sh`
 
 ### Script Execution Standards
+- **Shell Requirement**: ALWAYS use `bash script.sh` instead of `sh script.sh` for script execution
 - Use PBS template system to reduce redundancy
 - Generate batch scripts from CSV parameter files
 - Include comprehensive error handling and logging
 - Support both single runs and batch processing
 - Use relative paths with proper base directory handling
 
+**Important**: All shell scripts (.sh) must be executed with bash:
+```bash
+# Correct way to run scripts
+bash Scripts/integration/SpatialGlue/run.sh
+
+# Incorrect - do not use
+sh Scripts/integration/SpatialGlue/run.sh
+```
+
 ### Quality Assurance
 1. **Reproducibility**: Fixed random seeds across all methods
 2. **Validation**: Test on known datasets before new experiments
 3. **Documentation**: Comment complex spatial processing steps
 4. **Version Control**: Commit major changes with descriptive messages
+5. **Task Configuration Maintenance**: ALWAYS update `tasks_sample.csv` when project structure changes
+
+### Task Configuration Management
+**CRITICAL REQUIREMENT**: `tasks_sample.csv` must be kept synchronized with project structure changes.
+
+When making any of the following changes, IMMEDIATELY update `tasks_sample.csv`:
+- Adding new integration methods
+- Moving or renaming script files
+- Changing dataset paths or structure
+- Modifying result output paths
+- Adding new data types or formats
+- Updating parameter configurations
+
+The file serves as the single source of truth for:
+- Available integration tasks and methods
+- Current script locations and execution paths
+- Dataset file paths and naming conventions
+- Result output directory structure
+- Default parameter configurations
 
 ### Method Integration Requirements
 Each spatial integration method must:

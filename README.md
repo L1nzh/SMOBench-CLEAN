@@ -74,22 +74,3 @@ SMOBench-CLEAN/
 └── docs/                     # Documentation
 ```
 
-## Supported Methods
-
-- **SpatialGlue**: Graph-based spatial multi-omics integration
-- **SpaMV**: Spatial Multi-omics Variational integration
-- **SpaMosaic**: Mosaic integration method
-- **PRAGA**: Adversarial integration approach
-- **COSMOS**: Multi-modal integration framework
-
-## Data Types
-
-- **RNA+ADT**: Transcriptome + Proteome integration
-- **RNA+ATAC**: Transcriptome + Epigenome integration
-
-## Clustering Methods
-
-- **mclust**: Gaussian mixture model clustering
-- **leiden**: Community detection clustering
-- **louvain**: Modularity optimization clustering
-- **kmeans**: K-means clustering

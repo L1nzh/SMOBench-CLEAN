@@ -6,7 +6,6 @@ import pandas as pd
 import numpy as np
 from scipy.stats.mstats import gmean
 from anndata import AnnData
-import anndata as ad
 from typing import Optional
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import LabelEncoder
@@ -642,51 +641,3 @@ def Integrated_3D_graph(batch_label, spatial_mat, joint_mat=None, rna_mat=None, 
                 data += [-1] * len(cur_list)
 
     return scipy.sparse.coo_matrix((data, (row_index, col_index)), shape=(N, N))
-
-def combine_BC(adata_list):
-    X_list = []
-    spatial_list = []
-    batch_list = []
-    feat_list = []
-
-    for i, adata in enumerate(adata_list):
-        # print(adata.obsm['feat'].shape)
-        # X_list.append(adata.obsm['feat'])
-        print(adata.X.shape)
-
-        if scipy.sparse.issparse(adata.X):
-            X_list.append(adata.X.toarray())
-        else:
-            X_list.append(adata.X)
-        spatial_list.append(adata.obsm['spatial'])
-
-        batch_list.append(np.full(adata.n_obs, i))
-
-    X_combined = np.concatenate(X_list, axis=0)
-    spatial_combined = np.concatenate(spatial_list, axis=0)
-
-    # feat_combined = np.concatenate(feat_list, axis=0)
-
-    batch_combined = np.concatenate(batch_list, axis=0)
-
-    adata_combine = ad.AnnData(X=X_combined)
-    adata_combine.obsm['spatial'] = spatial_combined
-
-    # 将 batch_combined 转为 Pandas Series，再转为 'category' 类型
-    adata_combine.obs['src'] = batch_combined
-    # 假设 batch_array 是 NumPy 数组
-    batch_array = adata_combine.obs['src'].values  # 或从其他来源获取
-
-    # 转换为分类类型
-    adata_combine.obs['src'] = pd.Series(
-        batch_array,
-        dtype='category',
-        index=adata_combine.obs.index  # 确保索引一致
-    )
-
-    # print(adata_combine.obs['src'])
-
-    return adata_combine
-
-def normalize_marker_name(name):
-    return name.replace('-', '_').replace('Mouse', 'mouse').replace('Human', 'human').replace('Rat', 'rat')

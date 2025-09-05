@@ -3,11 +3,8 @@ import pandas as pd
 import scanpy as sc
 import os
 import warnings
-import time  # Added import time
 from PRESENT import gene_sets_alignment, peak_sets_alignment
 from PRESENT import PRESENT_function
-from PRESENT.Utils import combine_BC
-from PRESENT.Utils import normalize_marker_name
 warnings.filterwarnings("ignore")
 
 if __name__ == '__main__':
@@ -53,9 +50,8 @@ if __name__ == '__main__':
         for path in args.adata_rna_path:
             adata_rna_list.append(sc.read_h5ad(path))
         adata_rna_list = gene_sets_alignment(adata_rna_list)
-        # 调用 combine_BC 函数
-        adata_rna = combine_BC(adata_rna_list)
-        adata_rna.obs[args.batch_key] = adata_rna.obs["src"]
+        adata_rna = adata_rna_list[0].concatenate(adata_rna_list[1:])
+        adata_rna.obs[args.batch_key] = adata_rna.obs["batch"]
 
     if len(args.adata_atac_path)==1: 
         adata_atac = sc.read_h5ad(args.adata_atac_path[0])
@@ -64,18 +60,9 @@ if __name__ == '__main__':
         adata_atac_list = []
         for path in args.adata_atac_path:
             adata_atac_list.append(sc.read_h5ad(path))
-        # 检查路径中是否包含 "Mouse_Brain"
-        if any("Mouse_Brain" in path for path in args.adata_atac_path):
-            adata_atac_list[0].var_names = [normalize_marker_name(name) for name in adata_atac_list[0].var_names]
-            adata_atac_list[1].var_names = [normalize_marker_name(name) for name in adata_atac_list[1].var_names]
-            adata_atac_list[2].var_names = [normalize_marker_name(name) for name in adata_atac_list[2].var_names]
-            adata_atac_list[3].var_names = [normalize_marker_name(name) for name in adata_atac_list[3].var_names]
-            adata_atac_list = peak_sets_alignment(adata_atac_list, sep=("_", "_"))
-        else:
-            adata_atac_list = peak_sets_alignment(adata_atac_list)
-        # 调用 combine_BC 函数
-        adata_atac = combine_BC(adata_atac_list)
-        adata_atac.obs[args.batch_key] = adata_atac.obs["src"]
+        adata_atac_list = peak_sets_alignment(adata_atac_list)
+        adata_atac = adata_atac_list[0].concatenate(adata_atac_list[1:])
+        adata_atac.obs[args.batch_key] = adata_atac.obs["batch"]
     
     if len(args.adata_adt_path)==1: 
         adata_adt = sc.read_h5ad(args.adata_adt_path[0])
@@ -84,18 +71,9 @@ if __name__ == '__main__':
         adata_adt_list = []
         for path in args.adata_adt_path:
             adata_adt_list.append(sc.read_h5ad(path))
-        if any("Mouse_Thymus" in path for path in args.adata_adt_path):
-            adata_adt_list[0].var_names = [normalize_marker_name(name) for name in adata_adt_list[0].var_names]
-            adata_adt_list[1].var_names = [normalize_marker_name(name) for name in adata_adt_list[1].var_names]
-            adata_adt_list[2].var_names = [normalize_marker_name(name) for name in adata_adt_list[2].var_names]
-            adata_adt_list[3].var_names = [normalize_marker_name(name) for name in adata_adt_list[3].var_names]
         adata_adt_list = gene_sets_alignment(adata_adt_list)
-        # 调用 combine_BC 函数
-        adata_adt = combine_BC(adata_adt_list)
-        adata_adt.obs[args.batch_key] = adata_adt.obs["src"]
-    
-    print("Starting PRESENT function (training process)...") # Optional: Indicate start
-    start_time = time.time() # Start timer
+        adata_adt = adata_adt_list[0].concatenate(adata_adt_list[1:])
+        adata_adt.obs[args.batch_key] = adata_adt.obs["batch"]
 
     adata = PRESENT_function(
         args.spatial_key, 
@@ -125,10 +103,6 @@ if __name__ == '__main__':
         device = args.device,
         device_id = args.device_id
     )
-    end_time = time.time() # End timer
-    running_time = end_time - start_time
-    print(f"PRESENT function (training process) finished.") # Optional: Indicate end
-    print(f"Total running time for PRESENT function: {running_time:.4f} seconds") # Print duration
 
     if args.outputdir.endswith("/"): args.outputdir = args.outputdir[0:-1]
     os.makedirs(args.outputdir, exist_ok=True)

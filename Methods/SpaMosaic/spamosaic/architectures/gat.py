@@ -14,6 +14,30 @@ from torch_geometric.utils import remove_self_loops, add_self_loops, softmax
 
 # forked from https://github.com/QIFEIDKN/STAGATE_pyG
 class GATConv(MessagePassing):
+    """
+    Graph Attention Network (GAT) layer adapted from STAGATE implementation.
+
+    Parameters
+    ----------
+    in_channels : int or tuple of int
+        Dimension(s) of input node features.
+    out_channels : int
+        Dimension of output node features.
+    heads : int, default=1
+        Number of attention heads.
+    concat : bool, default=True
+        Whether to concatenate multi-head outputs (True) or average them (False).
+    negative_slope : float, default=0.2
+        LeakyReLU angle of the negative slope.
+    dropout : float, default=0.0
+        Dropout probability for attention coefficients.
+    add_self_loops : bool, default=True
+        Whether to add self-loops to the input graph.
+    bias : bool, default=True
+        Whether to add bias (not used here).
+    **kwargs : optional
+        Additional arguments for `MessagePassing`.
+    """
     def __init__(self, in_channels: Union[int, Tuple[int, int]],
                  out_channels: int, heads: int = 1, concat: bool = True,
                  negative_slope: float = 0.2, dropout: float = 0.0,
@@ -44,6 +68,31 @@ class GATConv(MessagePassing):
 
     def forward(self, x: Union[Tensor, OptPairTensor], edge_index: Adj,
                 size: Size = None, return_attention_weights=None, attention=True, tied_attention = None):
+        """
+        Forward pass for the GAT layer.
+
+        Parameters
+        ----------
+        x : Tensor or tuple of Tensors
+            Input node features, shape (N, F).
+        edge_index : Tensor or SparseTensor
+            Graph connectivity in COO format.
+        size : tuple of int, optional
+            Size of source and target node sets.
+        return_attention_weights : bool, optional
+            Whether to return attention weights along with output.
+        attention : bool, default=True
+            Whether to apply attention mechanism.
+        tied_attention : tuple of Tensors, optional
+            Precomputed attention weights to reuse.
+
+        Returns
+        -------
+        out : Tensor
+            Output node embeddings.
+        attention_weights : optional
+            Attention weights (if `return_attention_weights` is True).
+        """
         H, C = self.heads, self.out_channels
 
         if isinstance(x, Tensor):
@@ -103,6 +152,29 @@ class GATConv(MessagePassing):
     def message(self, x_j: Tensor, alpha_j: Tensor, alpha_i: OptTensor,
                 index: Tensor, ptr: OptTensor,
                 size_i: Optional[int]) -> Tensor:
+        """
+        Message passing step: applies attention-weighted aggregation.
+
+        Parameters
+        ----------
+        x_j : Tensor
+            Features of source nodes.
+        alpha_j : Tensor
+            Attention logits from source nodes.
+        alpha_i : Tensor or None
+            Attention logits from target nodes.
+        index : Tensor
+            Target indices for aggregation.
+        ptr : Tensor or None
+            Optional pointer array for variable-sized batches.
+        size_i : int, optional
+            Number of target nodes.
+
+        Returns
+        -------
+        Tensor
+            Aggregated node features after attention weighting.
+        """
         alpha = alpha_j if alpha_i is None else alpha_j + alpha_i
 
         alpha = torch.sigmoid(alpha)
@@ -123,6 +195,16 @@ import torch.nn.functional as F
 
 # FROM STAGATE_pyg
 class GAT(torch.nn.Module):
+    """
+    A 4-layer Graph Attention Network used for spatial transcriptomics.
+
+    This module implements a symmetric encoder-decoder GAT with tied weights.
+
+    Parameters
+    ----------
+    hidden_dims : list of int
+        A list [in_dim, hidden_dim, out_dim] specifying the feature dimensions.
+    """
     def __init__(self, hidden_dims):
         super(GAT, self).__init__()
 
@@ -137,7 +219,22 @@ class GAT(torch.nn.Module):
                              dropout=0, add_self_loops=False, bias=False)
 
     def forward(self, features, edge_index):
+        """
+        Forward pass of the GAT model.
 
+        Parameters
+        ----------
+        features : Tensor
+            Input node features.
+        edge_index : Tensor
+            Edge indices in COO format.
+
+        Returns
+        -------
+        Tuple[Tensor, Tensor]
+            - Latent embeddings after encoder (normalized).
+            - Reconstructed features after decoder.
+        """
         h1 = F.elu(self.conv1(features, edge_index))
         h2 = self.conv2(h1, edge_index, attention=False)
         self.conv3.lin_src.data = self.conv2.lin_src.transpose(0, 1)

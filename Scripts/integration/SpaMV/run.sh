@@ -1,188 +1,199 @@
 #!/bin/bash
 
-# 聚类数HLN:6 HT:6 mouse_thymus:8 mouse_spleen:5 mouse_brain:18 3M:5 misar:16
+# Comprehensive SpaMV run script for all datasets
 # Use relative paths for portability - script should be run from SMOBench root directory
-RESULT_ROOT="Results/adata/SpaMV"
+# Cluster numbers: HLN:6 HT:6 mouse_thymus:8 mouse_spleen:5 mouse_brain:18 3M:5 misar:16
 
-## Human_Lymph_Nodes (withGT RNA+ADT)
-python Scripts/integration/SpaMV/run_SpaMV.py \
+echo "Starting comprehensive SpaMV processing..."
+echo "Start time: $(date)"
+
+# Create base results directory
+mkdir -p Results/adata/SpaMV Results/plot/SpaMV
+
+# === withGT RNA+ADT Datasets ===
+
+echo "Processing Human_Lymph_Nodes datasets..."
+
+# Human_Lymph_Nodes A1
+echo "Processing Human_Lymph_Nodes A1..."
+python Scripts/integration/SpaMV/run_spamv.py \
+  --data_type 10x \
   --RNA_path Dataset/withGT/RNA_ADT/Human_Lymph_Nodes/A1/adata_RNA.h5ad \
   --ADT_path Dataset/withGT/RNA_ADT/Human_Lymph_Nodes/A1/adata_ADT.h5ad \
-  --save_path "${RESULT_ROOT}/HLN/A1/SpaMV_HLN_A1.h5ad" \
+  --save_path Results/adata/SpaMV/HLN/A1/SpaMV_HLN_A1.h5ad \
   --method SpaMV \
   --dataset Human_Lymph_Nodes/A1 \
   --cluster_nums 6
 
-python Scripts/integration/SpaMV/run_SpaMV.py \
+# Human_Lymph_Nodes D1
+echo "Processing Human_Lymph_Nodes D1..."
+python Scripts/integration/SpaMV/run_spamv.py \
+  --data_type 10x \
   --RNA_path Dataset/withGT/RNA_ADT/Human_Lymph_Nodes/D1/adata_RNA.h5ad \
   --ADT_path Dataset/withGT/RNA_ADT/Human_Lymph_Nodes/D1/adata_ADT.h5ad \
-  --save_path "${RESULT_ROOT}/HLN/D1/SpaMV_HLN_D1.h5ad" \
+  --save_path Results/adata/SpaMV/HLN/D1/SpaMV_HLN_D1.h5ad \
   --method SpaMV \
   --dataset Human_Lymph_Nodes/D1 \
   --cluster_nums 6
 
-## Human_Tonsils (withGT RNA+ADT)
-python Scripts/integration/SpaMV/run_SpaMV.py \
+echo "Processing Human_Tonsils datasets..."
+
+# Human_Tonsils S1
+echo "Processing Human_Tonsils S1..."
+python Scripts/integration/SpaMV/run_spamv.py \
+  --data_type 10x \
   --RNA_path Dataset/withGT/RNA_ADT/Human_Tonsils/S1/adata_RNA.h5ad \
   --ADT_path Dataset/withGT/RNA_ADT/Human_Tonsils/S1/adata_ADT.h5ad \
-  --save_path "${RESULT_ROOT}/HT/S1/SpaMV_HT_S1.h5ad" \
+  --save_path Results/adata/SpaMV/HT/S1/SpaMV_HT_S1.h5ad \
   --method SpaMV \
   --dataset Human_Tonsils/S1 \
   --cluster_nums 6
 
-python Scripts/integration/SpaMV/run_SpaMV.py \
+# Human_Tonsils S2
+echo "Processing Human_Tonsils S2..."
+python Scripts/integration/SpaMV/run_spamv.py \
+  --data_type 10x \
   --RNA_path Dataset/withGT/RNA_ADT/Human_Tonsils/S2/adata_RNA.h5ad \
   --ADT_path Dataset/withGT/RNA_ADT/Human_Tonsils/S2/adata_ADT.h5ad \
-  --save_path "${RESULT_ROOT}/HT/S2/SpaMV_HT_S2.h5ad" \
+  --save_path Results/adata/SpaMV/HT/S2/SpaMV_HT_S2.h5ad \
   --method SpaMV \
   --dataset Human_Tonsils/S2 \
   --cluster_nums 6
 
-## mouse_thymus (withGT RNA+ADT)
-python Scripts/integration/SpaMV/run_SpaMV.py \
-  --RNA_path Dataset/withGT/RNA_ADT/mouse_thymus/thymus1/adata_RNA.h5ad \
-  --ADT_path Dataset/withGT/RNA_ADT/mouse_thymus/thymus1/adata_ADT.h5ad \
-  --save_path "${RESULT_ROOT}/mouse_thymus/thymus1/SpaMV_mouse_thymus_thymus1.h5ad" \
+# Human_Tonsils S3
+echo "Processing Human_Tonsils S3..."
+python Scripts/integration/SpaMV/run_spamv.py \
+  --data_type 10x \
+  --RNA_path Dataset/withGT/RNA_ADT/Human_Tonsils/S3/adata_RNA.h5ad \
+  --ADT_path Dataset/withGT/RNA_ADT/Human_Tonsils/S3/adata_ADT.h5ad \
+  --save_path Results/adata/SpaMV/HT/S3/SpaMV_HT_S3.h5ad \
   --method SpaMV \
-  --dataset mouse_thymus/thymus1 \
-  --cluster_nums 8
+  --dataset Human_Tonsils/S3 \
+  --cluster_nums 6
 
-python Scripts/integration/SpaMV/run_SpaMV.py \
-  --RNA_path Dataset/withGT/RNA_ADT/mouse_thymus/thymus2/adata_RNA.h5ad \
-  --ADT_path Dataset/withGT/RNA_ADT/mouse_thymus/thymus2/adata_ADT.h5ad \
-  --save_path "${RESULT_ROOT}/mouse_thymus/thymus2/SpaMV_mouse_thymus_thymus2.h5ad" \
-  --method SpaMV \
-  --dataset mouse_thymus/thymus2 \
-  --cluster_nums 8
+# === woGT RNA+ADT Datasets ===
 
-## mouse_spleen (withGT RNA+ADT)
-python Scripts/integration/SpaMV/run_SpaMV.py \
-  --RNA_path Dataset/withGT/RNA_ADT/mouse_spleen/spleen1/adata_RNA.h5ad \
-  --ADT_path Dataset/withGT/RNA_ADT/mouse_spleen/spleen1/adata_ADT.h5ad \
-  --save_path "${RESULT_ROOT}/mouse_spleen/spleen1/SpaMV_mouse_spleen_spleen1.h5ad" \
-  --method SpaMV \
-  --dataset mouse_spleen/spleen1 \
-  --cluster_nums 5
+echo "Processing Mouse_Thymus datasets..."
 
-python Scripts/integration/SpaMV/run_SpaMV.py \
-  --RNA_path Dataset/withGT/RNA_ADT/mouse_spleen/spleen2/adata_RNA.h5ad \
-  --ADT_path Dataset/withGT/RNA_ADT/mouse_spleen/spleen2/adata_ADT.h5ad \
-  --save_path "${RESULT_ROOT}/mouse_spleen/spleen2/SpaMV_mouse_spleen_spleen2.h5ad" \
-  --method SpaMV \
-  --dataset mouse_spleen/spleen2 \
-  --cluster_nums 5
+# Mouse_Thymus datasets
+for thymus_id in 1 2 3 4; do
+    echo "Processing Mouse_Thymus${thymus_id}..."
+    python Scripts/integration/SpaMV/run_spamv.py \
+      --data_type Stereo-CITE-seq \
+      --RNA_path Dataset/woGT/RNA_ADT/Mouse_Thymus/Mouse_Thymus${thymus_id}/adata_RNA.h5ad \
+      --ADT_path Dataset/woGT/RNA_ADT/Mouse_Thymus/Mouse_Thymus${thymus_id}/adata_ADT.h5ad \
+      --save_path Results/adata/SpaMV/Mouse_Thymus/Thymus${thymus_id}/SpaMV_MT_Thymus${thymus_id}.h5ad \
+      --method SpaMV \
+      --dataset Mouse_Thymus/Mouse_Thymus${thymus_id} \
+      --cluster_nums 8
+done
 
-## mouse_brain (withGT RNA+ATAC)  
-python Scripts/integration/SpaMV/run_SpaMV.py \
-  --RNA_path Dataset/withGT/RNA_ATAC/mouse_brain/E18_Rep1/adata_RNA.h5ad \
-  --ATAC_path Dataset/withGT/RNA_ATAC/mouse_brain/E18_Rep1/adata_ATAC.h5ad \
-  --save_path "${RESULT_ROOT}/mouse_brain/E18_Rep1/SpaMV_mouse_brain_E18_Rep1.h5ad" \
-  --method SpaMV \
-  --dataset mouse_brain/E18_Rep1 \
-  --cluster_nums 18
+echo "Processing Mouse_Spleen datasets..."
 
-python Scripts/integration/SpaMV/run_SpaMV.py \
-  --RNA_path Dataset/withGT/RNA_ATAC/mouse_brain/E18_Rep2/adata_RNA.h5ad \
-  --ATAC_path Dataset/withGT/RNA_ATAC/mouse_brain/E18_Rep2/adata_ATAC.h5ad \
-  --save_path "${RESULT_ROOT}/mouse_brain/E18_Rep2/SpaMV_mouse_brain_E18_Rep2.h5ad" \
-  --method SpaMV \
-  --dataset mouse_brain/E18_Rep2 \
-  --cluster_nums 18
+# Mouse_Spleen datasets
+for spleen_id in 1 2; do
+    echo "Processing Mouse_Spleen${spleen_id}..."
+    python Scripts/integration/SpaMV/run_spamv.py \
+      --data_type SPOTS \
+      --RNA_path Dataset/woGT/RNA_ADT/Mouse_Spleen/Mouse_Spleen${spleen_id}/adata_RNA.h5ad \
+      --ADT_path Dataset/woGT/RNA_ADT/Mouse_Spleen/Mouse_Spleen${spleen_id}/adata_ADT.h5ad \
+      --save_path Results/adata/SpaMV/Mouse_Spleen/Spleen${spleen_id}/SpaMV_MS_Spleen${spleen_id}.h5ad \
+      --method SpaMV \
+      --dataset Mouse_Spleen/Mouse_Spleen${spleen_id} \
+      --cluster_nums 5
+done
 
-## 3M datasets (woGT)
-python Scripts/integration/SpaMV/run_SpaMV.py \
-  --RNA_path Dataset/woGT/3M_1/adata_RNA.h5ad \
-  --ADT_path Dataset/woGT/3M_1/adata_ADT.h5ad \
-  --save_path "${RESULT_ROOT}/3M_1/SpaMV_3M_1.h5ad" \
-  --method SpaMV \
-  --dataset 3M/1 \
-  --cluster_nums 5
+# === RNA+ATAC Datasets ===
 
-python Scripts/integration/SpaMV/run_SpaMV.py \
-  --RNA_path Dataset/woGT/3M_2/adata_RNA.h5ad \
-  --ADT_path Dataset/woGT/3M_2/adata_ADT.h5ad \
-  --save_path "${RESULT_ROOT}/3M_2/SpaMV_3M_2.h5ad" \
-  --method SpaMV \
-  --dataset 3M/2 \
-  --cluster_nums 5
+echo "Processing Mouse_Embryos RNA+ATAC datasets..."
 
-python Scripts/integration/SpaMV/run_SpaMV.py \
-  --RNA_path Dataset/woGT/3M_3/adata_RNA.h5ad \
-  --ADT_path Dataset/woGT/3M_3/adata_ADT.h5ad \
-  --save_path "${RESULT_ROOT}/3M_3/SpaMV_3M_3.h5ad" \
-  --method SpaMV \
-  --dataset 3M/3 \
-  --cluster_nums 5
+# Check if Mouse_Embryos datasets exist
+if [ -d "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1" ]; then
+    for embryo_stage in E11 E13 E15 E18; do
+        if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/${embryo_stage}/adata_RNA.h5ad" ]; then
+            echo "Processing Mouse_Embryos_S1 ${embryo_stage}..."
+            python Scripts/integration/SpaMV/run_spamv.py \
+              --data_type MISAR \
+              --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/${embryo_stage}/adata_RNA.h5ad \
+              --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/${embryo_stage}/adata_ATAC.h5ad \
+              --save_path Results/adata/SpaMV/MISAR_S1/${embryo_stage}/SpaMV_MISAR_S1_${embryo_stage}.h5ad \
+              --method SpaMV \
+              --dataset Mouse_Embryos_S1/${embryo_stage} \
+              --cluster_nums 16
+        fi
+    done
+fi
 
-python Scripts/integration/SpaMV/run_SpaMV.py \
-  --RNA_path Dataset/woGT/3M_4/adata_RNA.h5ad \
-  --ADT_path Dataset/woGT/3M_4/adata_ADT.h5ad \
-  --save_path "${RESULT_ROOT}/3M_4/SpaMV_3M_4.h5ad" \
-  --method SpaMV \
-  --dataset 3M/4 \
-  --cluster_nums 5
+if [ -d "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2" ]; then
+    for embryo_stage in E11 E13 E15 E18; do
+        if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/${embryo_stage}/adata_RNA.h5ad" ]; then
+            echo "Processing Mouse_Embryos_S2 ${embryo_stage}..."
+            python Scripts/integration/SpaMV/run_spamv.py \
+              --data_type MISAR \
+              --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/${embryo_stage}/adata_RNA.h5ad \
+              --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/${embryo_stage}/adata_ATAC.h5ad \
+              --save_path Results/adata/SpaMV/MISAR_S2/${embryo_stage}/SpaMV_MISAR_S2_${embryo_stage}.h5ad \
+              --method SpaMV \
+              --dataset Mouse_Embryos_S2/${embryo_stage} \
+              --cluster_nums 16
+        fi
+    done
+fi
 
-## MISAR datasets (woGT RNA+ATAC)
-python Scripts/integration/SpaMV/run_SpaMV.py \
-  --RNA_path Dataset/woGT/MISAR/misar_1/adata_RNA.h5ad \
-  --ATAC_path Dataset/woGT/MISAR/misar_1/adata_ATAC.h5ad \
-  --save_path "${RESULT_ROOT}/MISAR/misar_1/SpaMV_MISAR_misar_1.h5ad" \
-  --method SpaMV \
-  --dataset MISAR/misar_1 \
-  --cluster_nums 16
+echo "Processing Mouse_Brain RNA+ATAC datasets..."
 
-python Scripts/integration/SpaMV/run_SpaMV.py \
-  --RNA_path Dataset/woGT/MISAR/misar_2/adata_RNA.h5ad \
-  --ATAC_path Dataset/woGT/MISAR/misar_2/adata_ATAC.h5ad \
-  --save_path "${RESULT_ROOT}/MISAR/misar_2/SpaMV_MISAR_misar_2.h5ad" \
-  --method SpaMV \
-  --dataset MISAR/misar_2 \
-  --cluster_nums 16
+# Mouse_Brain datasets (woGT RNA+ATAC)
+brain_types=("ATAC" "H3K4me3" "H3K27ac" "H3K27me3")
+for brain_type in "${brain_types[@]}"; do
+    if [ -f "Dataset/woGT/RNA_ATAC/Mouse_Brain/Mouse_Brain_${brain_type}/adata_RNA.h5ad" ]; then
+        echo "Processing Mouse_Brain ${brain_type}..."
+        # Check if the ATAC file exists with different naming
+        atac_file="Dataset/woGT/RNA_ATAC/Mouse_Brain/Mouse_Brain_${brain_type}/adata_ATAC.h5ad"
+        if [ ! -f "$atac_file" ]; then
+            atac_file="Dataset/woGT/RNA_ATAC/Mouse_Brain/Mouse_Brain_${brain_type}/adata_peaks_normalized.h5ad"
+        fi
+        
+        if [ -f "$atac_file" ]; then
+            python Scripts/integration/SpaMV/run_spamv.py \
+              --data_type Spatial-epigenome-transcriptome \
+              --RNA_path Dataset/woGT/RNA_ATAC/Mouse_Brain/Mouse_Brain_${brain_type}/adata_RNA.h5ad \
+              --ATAC_path "$atac_file" \
+              --save_path Results/adata/SpaMV/Mouse_Brain/${brain_type}/SpaMV_MB_${brain_type}.h5ad \
+              --method SpaMV \
+              --dataset Mouse_Brain/Mouse_Brain_${brain_type} \
+              --cluster_nums 18
+        fi
+    fi
+done
 
-python Scripts/integration/SpaMV/run_SpaMV.py \
-  --RNA_path Dataset/woGT/MISAR/misar_3/adata_RNA.h5ad \
-  --ATAC_path Dataset/woGT/MISAR/misar_3/adata_ATAC.h5ad \
-  --save_path "${RESULT_ROOT}/MISAR/misar_3/SpaMV_MISAR_misar_3.h5ad" \
-  --method SpaMV \
-  --dataset MISAR/misar_3 \
-  --cluster_nums 16
+# === 3M Simulation Dataset ===
 
-python Scripts/integration/SpaMV/run_SpaMV.py \
-  --RNA_path Dataset/woGT/MISAR/misar_4/adata_RNA.h5ad \
-  --ATAC_path Dataset/woGT/MISAR/misar_4/adata_ATAC.h5ad \
-  --save_path "${RESULT_ROOT}/MISAR/misar_4/SpaMV_MISAR_misar_4.h5ad" \
-  --method SpaMV \
-  --dataset MISAR/misar_4 \
-  --cluster_nums 16
+# echo "Processing 3M Simulation dataset..."
 
-python Scripts/integration/SpaMV/run_SpaMV.py \
-  --RNA_path Dataset/woGT/MISAR/misar_5/adata_RNA.h5ad \
-  --ATAC_path Dataset/woGT/MISAR/misar_5/adata_ATAC.h5ad \
-  --save_path "${RESULT_ROOT}/MISAR/misar_5/SpaMV_MISAR_misar_5.h5ad" \
-  --method SpaMV \
-  --dataset MISAR/misar_5 \
-  --cluster_nums 16
+# if [ -f "Dataset/withGT/3M_Simulation/adata_RNA.h5ad" ] && [ -f "Dataset/withGT/3M_Simulation/adata_ADT.h5ad" ]; then
+#     echo "Processing 3M Simulation (RNA+ADT)..."
+#     python Scripts/integration/SpaMV/run_spamv.py \
+#       --data_type simulation \
+#       --RNA_path Dataset/withGT/3M_Simulation/adata_RNA.h5ad \
+#       --ADT_path Dataset/withGT/3M_Simulation/adata_ADT.h5ad \
+#       --save_path Results/adata/SpaMV/3M_Simulation/SpaMV_3M_Sim.h5ad \
+#       --method SpaMV \
+#       --dataset 3M_Simulation/Simulation \
+#       --cluster_nums 5
+# fi
 
-python Scripts/integration/SpaMV/run_SpaMV.py \
-  --RNA_path Dataset/woGT/MISAR/misar_6/adata_RNA.h5ad \
-  --ATAC_path Dataset/woGT/MISAR/misar_6/adata_ATAC.h5ad \
-  --save_path "${RESULT_ROOT}/MISAR/misar_6/SpaMV_MISAR_misar_6.h5ad" \
-  --method SpaMV \
-  --dataset MISAR/misar_6 \
-  --cluster_nums 16
+echo "SpaMV processing completed!"
+echo "End time: $(date)"
 
-python Scripts/integration/SpaMV/run_SpaMV.py \
-  --RNA_path Dataset/woGT/MISAR/misar_7/adata_RNA.h5ad \
-  --ATAC_path Dataset/woGT/MISAR/misar_7/adata_ATAC.h5ad \
-  --save_path "${RESULT_ROOT}/MISAR/misar_7/SpaMV_MISAR_misar_7.h5ad" \
-  --method SpaMV \
-  --dataset MISAR/misar_7 \
-  --cluster_nums 16
+# Generate summary report
+echo "=== PROCESSING SUMMARY ==="
+echo "Results saved to Results/adata/SpaMV/"
+echo "Plots saved to Results/plot/SpaMV/"
+echo ""
+echo "Processed datasets:"
+find Results/adata/SpaMV -name "*.h5ad" | sort | while read file; do
+    echo "  - $file"
+done
 
-python Scripts/integration/SpaMV/run_SpaMV.py \
-  --RNA_path Dataset/woGT/MISAR/misar_8/adata_RNA.h5ad \
-  --ATAC_path Dataset/woGT/MISAR/misar_8/adata_ATAC.h5ad \
-  --save_path "${RESULT_ROOT}/MISAR/misar_8/SpaMV_MISAR_misar_8.h5ad" \
-  --method SpaMV \
-  --dataset MISAR/misar_8 \
-  --cluster_nums 16
+echo ""
+echo "Total results: $(find Results/adata/SpaMV -name "*.h5ad" | wc -l) datasets processed"

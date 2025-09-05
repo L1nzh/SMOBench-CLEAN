@@ -1,115 +1,49 @@
-# SpaMosaic Integration Method
+# SpaMosaic: Mosaic Integration of Spatial Multi-Omics
 
-This directory contains the SpaMosaic integration method implementation for SMOBench.
+## Overview
+With the advent of spatial multi-omics technologies, it is now possible to integrate datasets with partially overlapping modalities to construct higher-dimensional views of the source tissue. **SpaMosaic** is a spatial multi-omics integration tool that uses contrastive learning and graph neural networks to build a **modality-agnostic**, **batch-corrected** latent space, enabling downstream analyses such as spatial domain identification and imputation of missing omics.
 
-## Directory Structure
+## Installation
 
-```
-Methods/SpaMosaic/
-├── README.md          # This file
-├── spamosaic/         # SpaMosaic core implementation
-└── backup/            # Original dataset-specific scripts (archived)
-```
-
-## New Unified Implementation
-
-The SpaMosaic method has been reorganized to use a unified script that supports all integration types:
-
-- **Location**: `Scripts/integration/SpaMosaic/`
-- **Main Script**: `run_spamosaic.py`
-- **Execution Script**: `run.sh`
-
-## Usage
-
-### Basic Usage
-
+### 1. Create and activate a conda environment
 ```bash
-# Navigate to the script directory
-cd Scripts/integration/SpaMosaic/
-
-# Vertical integration (RNA+ADT) for HLN dataset
-./run.sh HLN vertical "rna adt" A1 D1
-
-# Horizontal integration (RNA only) for Mouse_Brain
-./run.sh Mouse_Brain horizontal rna sample1 sample2 sample3
-
-# Mosaic integration (RNA+ATAC) for MISAR
-./run.sh MISAR mosaic "rna atac" E11 E13 E15 E18
+git clone https://github.com/JinmiaoChenLab/SpaMosaic.git
+cd SpaMosaic
+conda env create -f environment.yml
+conda activate spamosaic-env
 ```
 
-### Advanced Usage
+### 2. Install core dependencies
+Choose the PyTorch and PyTorch Geometric build that matches your local CUDA toolkit or driver.  
+For other versions (including CPU-only builds), please refer to the [documentation](https://spamosaic.readthedocs.io/en/latest/).
 
+**Example: PyTorch 2.0.0 with CUDA 11.7**
 ```bash
-# Custom parameters
-./run.sh -g 1 -c 10 --epochs 200 --lr 0.005 HLN vertical "rna adt" A1 D1
+# PyTorch
+pip install torch==2.0.0+cu117 --index-url https://download.pytorch.org/whl/cu117
 
-# Custom data and output directories
-./run.sh -d /path/to/data -o /path/to/output HLN vertical "rna adt" A1
+# PyTorch Geometric (matching Torch 2.0.0 and CUDA version)
+pip install torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric \
+  -f https://data.pyg.org/whl/torch-2.0.0+cu117.html
 
-# Dry run to see the command
-./run.sh --dry-run HLN vertical "rna adt" A1 D1
+pip install harmony-pytorch --no-deps
+
+# Install SpaMosaic
+pip install spamosaic
 ```
 
-### Help
+## Tutorials
+We provide detailed tutorials on applying SpaMosaic to various integration and imputation tasks.  
+Please refer to the documentation: [https://spamosaic.readthedocs.io/en/latest/](https://spamosaic.readthedocs.io/en/latest/)
 
-```bash
-./run.sh --help
-```
+<!--
+### Example tutorial categories
+* [Horizontal integration](./integration_examples/horizontal)  
+* [Vertical integration](./integration_examples/vertical)  
+* [Mosaic integration](./integration_examples/mosaic)  
+* [Imputation](./imputation_examples/)  
+-->
 
-## Integration Types Supported
 
-1. **Vertical Integration**: Same batch, cross-modality (e.g., RNA + ADT from same sample)
-2. **Horizontal Integration**: Same modality, cross-batch (e.g., RNA from multiple samples)  
-3. **Mosaic Integration**: Mixed modality and batch integration
-
-## Features
-
-- **Unified Interface**: Single script handles all integration types
-- **SMOBench Compatible**: Follows SMOBench standards and uses universal clustering
-- **Flexible Parameters**: Customizable GPU, learning rate, epochs, clustering methods
-- **Comprehensive Output**: Embeddings, clustering results, metrics, and integrated AnnData
-- **Error Handling**: Robust error checking and informative messages
-- **GPU Monitoring**: Tracks GPU memory usage during training
-
-## Requirements
-
-- Conda environment: `smobench`
-- SpaMosaic package installed
-- SMOBench Utils for universal clustering
-- NVIDIA GPU for CUDA acceleration (optional)
-
-## Output Structure
-
-```
-Results/adata/SpaMosaic/DATASET/
-├── SpaMosaic_DATASET_integrated.h5ad   # Integrated AnnData object
-├── umap.npy                            # UMAP coordinates
-├── metrics.txt                         # Training metrics and parameters
-├── embeddings/                         # Individual and merged embeddings
-│   ├── rna_batch0_embedding.npy
-│   ├── adt_batch0_embedding.npy
-│   └── batch0_merged_embedding.npy
-└── clustering/                         # Clustering results
-    ├── leiden_labels.npy
-    ├── louvain_labels.npy
-    ├── kmeans_labels.npy
-    └── mclust_labels.npy
-```
-
-## Migration from Old Scripts
-
-The original dataset-specific scripts have been moved to the `backup/` directory. The new unified implementation provides:
-
-1. **Better Maintainability**: Single script instead of multiple dataset-specific scripts
-2. **Consistent Interface**: Standardized parameters and outputs
-3. **Enhanced Features**: GPU monitoring, comprehensive clustering, better error handling
-4. **SMOBench Integration**: Compatible with SMOBench evaluation framework
-
-## Configuration
-
-The script automatically detects and uses appropriate preprocessing based on:
-- **RNA**: Highly variable gene selection, log normalization, PCA
-- **ADT**: Centered log ratio normalization, PCA  
-- **ATAC**: Peak alignment, dimensionality reduction
-
-Batch correction is applied automatically for multi-sample integration tasks.
+## Reproducibility
+To reproduce the results of SpaMosaic and the compared methods, please use the code on the [`SpaMosaic-reproduce`](https://github.com/JinmiaoChenLab/SpaMosaic/tree/SpaMosaic-reproduce) branch.

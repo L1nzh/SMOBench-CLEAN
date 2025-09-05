@@ -125,7 +125,7 @@ def construct_graph_by_coordinate(cell_position, n_neighbors=3):
     return adj
 
 def transform_adjacent_matrix(adjacent):
-    n_spot = adjacent['y'].max() + 1
+    n_spot = adjacent['x'].max() + 1
     adj = coo_matrix((adjacent['value'], (adjacent['x'], adjacent['y'])), shape=(n_spot, n_spot))
     return adj
 

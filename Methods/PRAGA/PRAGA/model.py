@@ -36,14 +36,14 @@ class Encoder_overall(Module):
         cat_adj_omics1 = torch.cat((_adj_spatial_omics1, _adj_feature_omics1), dim=0)
         cat_adj_omics2 = torch.cat((_adj_spatial_omics2, _adj_feature_omics2), dim=0)
 
-        adj_feature_omics1 = self.conv1X1_omics1(cat_adj_omics1.unsqueeze(0)).squeeze(0)
-        adj_feature_omics2 = self.conv1X1_omics2(cat_adj_omics2.unsqueeze(0)).squeeze(0)
+        adj_feature_omics1 = self.conv1X1_omics1(cat_adj_omics1).squeeze(0)
+        adj_feature_omics2 = self.conv1X1_omics2(cat_adj_omics2).squeeze(0)
 
         feat_embeding1, emb_latent_omics1 = self.encoder_omics1(features_omics1, adj_feature_omics1)
         feat_embeding2, emb_latent_omics2 = self.encoder_omics2(features_omics2, adj_feature_omics2)
 
-        cat_emb_latent = torch.cat((emb_latent_omics1, emb_latent_omics2), dim=2).squeeze(0)
-        emb_latent_combined = self.MLP(cat_emb_latent).squeeze(0)
+        cat_emb_latent = torch.cat((emb_latent_omics1, emb_latent_omics2), dim=1)
+        emb_latent_combined = self.MLP(cat_emb_latent)
 
         emb_recon_omics1 = self.decoder_omics1(emb_latent_combined, adj_spatial_omics1)
         emb_recon_omics2 = self.decoder_omics2(emb_latent_combined, adj_spatial_omics2)
@@ -102,7 +102,7 @@ class Encoder(Module):
         
     def forward(self, feat, adj):
         feat_embeding = torch.mm(feat, self.weight)
-        x = torch.matmul(adj, feat_embeding)
+        x = torch.spmm(adj, feat_embeding)
         
         return feat_embeding, x
     
@@ -143,7 +143,7 @@ class Decoder(Module):
         
     def forward(self, feat, adj):
         x = torch.mm(feat, self.weight)
-        x = torch.matmul(adj, x)
+        x = torch.spmm(adj, x)
         
         return x                  
 

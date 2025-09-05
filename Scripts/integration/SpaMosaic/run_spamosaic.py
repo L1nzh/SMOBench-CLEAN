@@ -1,382 +1,229 @@
-#!/usr/bin/env python3
-"""
-Unified SpaMosaic Integration Script
-Supports vertical, horizontal, and mosaic integration tasks
-Based on SMOBench standards and SpaMosaic official tutorials
-"""
-
 import os
-import sys
-import argparse
-import scanpy as sc
-import numpy as np
+import torch
 import pandas as pd
-import pynvml
+import scanpy as sc
+import argparse
 import time
-import warnings
-from pathlib import Path
-from os.path import join
+import sys
+import re
+import matplotlib.pyplot as plt
 
-# Add SMOBench utils to path
-current_dir = Path(__file__).parent.absolute()
-utils_path = current_dir.parent.parent.parent / "Utils"
-sys.path.insert(0, str(utils_path))
-
-# Import SMOBench utilities
-from SMOBench_clustering import universal_clustering
-
-# SpaMosaic imports
-try:
-    from spamosaic.framework import SpaMosaic
-    from spamosaic.preprocessing2 import RNA_preprocess, ADT_preprocess, Epigenome_preprocess
-    import spamosaic.utils as utls
-except ImportError as e:
-    print(f"Error importing SpaMosaic: {e}")
-    print("Please ensure SpaMosaic is properly installed")
-    sys.exit(1)
-
-# Suppress warnings
-warnings.filterwarnings('ignore')
+# Set CUDA environment for SpaMosaic
 os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
 
-def parse_arguments():
-    """Parse command line arguments"""
-    parser = argparse.ArgumentParser(description='Unified SpaMosaic Integration')
-    
-    # Data arguments
-    parser.add_argument('--dataset', type=str, required=True,
-                        help='Dataset name (e.g., HLN, MISAR, Mouse_Brain)')
-    parser.add_argument('--samples', type=str, nargs='+', required=True,
-                        help='Sample names (e.g., A1 D1 for HLN)')
-    parser.add_argument('--data_dir', type=str, required=True,
-                        help='Base data directory path')
-    parser.add_argument('--output_dir', type=str, required=True,
-                        help='Output directory path')
-    
-    # Integration type and modalities
-    parser.add_argument('--task', type=str, choices=['vertical', 'horizontal', 'mosaic'], 
-                        required=True, help='Integration task type')
-    parser.add_argument('--modalities', type=str, nargs='+', default=['rna', 'adt'],
-                        choices=['rna', 'adt', 'atac'],
-                        help='Modalities to integrate (default: rna adt)')
-    
-    # Model parameters
-    parser.add_argument('--gpu', type=int, default=0, help='GPU device ID')
-    parser.add_argument('--lr', type=float, default=0.01, help='Learning rate')
-    parser.add_argument('--epochs', type=int, default=100, help='Training epochs')
-    parser.add_argument('--intra_knn', type=int, default=2, help='Intra-KNN neighbors')
-    parser.add_argument('--inter_knn', type=int, default=2, help='Inter-KNN neighbors')
-    parser.add_argument('--w_g', type=float, default=0.8, help='Graph weight')
-    parser.add_argument('--seed', type=int, default=2024, help='Random seed')
-    
-    # Preprocessing parameters
-    parser.add_argument('--n_hvg', type=int, default=5000, help='Number of highly variable genes')
-    parser.add_argument('--n_peak', type=int, default=50000, help='Number of peaks for ATAC')
-    parser.add_argument('--batch_corr', action='store_true', default=True,
-                        help='Apply batch correction')
-    
-    # Clustering parameters
-    parser.add_argument('--clustering_methods', type=str, nargs='+',
-                        default=['leiden', 'louvain', 'kmeans', 'mclust'],
-                        help='Clustering methods to use')
-    parser.add_argument('--n_clusters', type=int, default=None,
-                        help='Number of clusters (auto-detect if not specified)')
-    
-    return parser.parse_args()
+# Add project root directory to module search path
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.."))
+sys.path.append(project_root)
 
-def load_data(data_dir, dataset, samples, modalities):
-    """Load data based on dataset and samples"""
-    input_dict = {mod: [] for mod in modalities}
-    
-    print(f"Loading data for dataset: {dataset}")
-    print(f"Samples: {samples}")
-    print(f"Modalities: {modalities}")
-    
-    for sample in samples:
-        sample_dir = join(data_dir, sample)
-        print(f"Loading from: {sample_dir}")
-        
-        for modality in modalities:
-            if modality == 'rna':
-                file_pattern = 'adata_RNA.h5ad'
-            elif modality == 'adt':
-                file_pattern = 'adata_ADT.h5ad'
-            elif modality == 'atac':
-                file_pattern = 'adata_ATAC.h5ad'
-            
-            file_path = join(sample_dir, file_pattern)
-            
-            if os.path.exists(file_path):
-                print(f"  Loading {modality} from {file_path}")
-                adata = sc.read_h5ad(file_path)
-                # Ensure unique observation names
-                adata.obs_names_make_unique()
-                adata.var_names_make_unique()
-                input_dict[modality].append(adata)
-            else:
-                print(f"  Warning: {file_path} not found")
-                input_dict[modality].append(None)
-    
-    # Remove empty modalities
-    input_dict = {k: v for k, v in input_dict.items() if any(x is not None for x in v)}
-    
-    return input_dict
+# Add SpaMosaic to path
+spamosaic_path = os.path.join(project_root, "Methods/SpaMosaic")
+sys.path.append(spamosaic_path)
 
-def align_features(input_dict):
-    """Align features across samples for each modality"""
-    print("Aligning features across samples...")
+import spamosaic
+from spamosaic.framework import SpaMosaic
+import spamosaic.utils as utls
+from spamosaic.preprocessing import RNA_preprocess, ADT_preprocess, Epigenome_preprocess
+from Utils.SMOBench_clustering import universal_clustering
+
+
+def parse_dataset_info(args):
+    """
+    Extract dataset_name and subset_name from RNA_path or save_path
+    Support two modes:
+    1. Manual specification --dataset Human_Lymph_Nodes/A1
+    2. Auto extraction from paths
+    """
+    if hasattr(args, 'dataset') and args.dataset:
+        parts = args.dataset.strip('/').split('/')
+        if len(parts) == 2:
+            return parts[0], parts[1]
+        elif len(parts) == 1:
+            return parts[0], "Unknown"
     
-    for modality, adata_list in input_dict.items():
-        if not adata_list or len(adata_list) < 2:
-            continue
-            
-        valid_adatas = [ad for ad in adata_list if ad is not None]
-        if len(valid_adatas) < 2:
-            continue
-            
-        if modality in ['rna']:
-            # Gene alignment for RNA
-            print(f"  Aligning genes for {modality}")
-            common_genes = set(valid_adatas[0].var_names)
-            for adata in valid_adatas[1:]:
-                common_genes.intersection_update(adata.var_names)
-            common_genes = sorted(common_genes)
-            
-            if not common_genes:
-                raise ValueError(f"No common genes found for {modality}")
-                
-            print(f"    Found {len(common_genes)} common genes")
-            for i, adata in enumerate(adata_list):
-                if adata is not None:
-                    input_dict[modality][i] = adata[:, common_genes]
-                    
-        elif modality in ['atac']:
-            # Peak alignment for ATAC
-            print(f"  Aligning peaks for {modality}")
-            from Methods.SpaMosaic.utils import peak_sets_alignment
-            input_dict[modality] = peak_sets_alignment(valid_adatas)
+    # Auto parse RNA_path
+    match = re.search(r'Dataset/([^/]+)/([^/]+)/([^/]+)/adata_RNA\.h5ad', args.RNA_path)
+    if match:
+        return match.group(2), match.group(3)
+    return "Unknown", "Unknown"
 
-    return input_dict
 
-def preprocess_data(input_dict, args):
-    """Preprocess data according to modality"""
-    print("Preprocessing data...")
+def main(args):
+    device = torch.device(args.device if torch.cuda.is_available() else 'cpu')
+    print('device:', device)
+    
+    # === Load Data ===
+    adata_rna = sc.read_h5ad(args.RNA_path)
+    adata_rna.var_names_make_unique()
+
+    if args.ADT_path:
+        adata_adt = sc.read_h5ad(args.ADT_path)
+        modality = 'adt'
+        adata_adt.var_names_make_unique()
+        input_dict = {
+            'rna': [adata_rna],
+            'adt': [adata_adt]
+        }
+    elif args.ATAC_path:
+        adata_atac = sc.read_h5ad(args.ATAC_path)
+        modality = 'atac'
+        adata_atac.var_names_make_unique()
+        input_dict = {
+            'rna': [adata_rna],
+            'atac': [adata_atac]
+        }
+    else:
+        raise ValueError("Either ADT_path or ATAC_path must be provided.")
+
+    # === Set batch key for SpaMosaic ===
+    # SpaMosaic requires a batch key for preprocessing
+    # For vertical integration, all data come from the same section/batch
+    for key in input_dict:
+        for adata in input_dict[key]:
+            if adata is not None and 'src' not in adata.obs.columns:
+                adata.obs['src'] = 'batch0'  # Use consistent batch name for vertical integration
+
+    # === Preprocessing ===
     input_key = 'dimred_bc'
     
-    for modality, adata_list in input_dict.items():
-        if modality == 'rna':
-            print("  Preprocessing RNA data")
-            RNA_preprocess(adata_list, 
-                         batch_corr=args.batch_corr,
-                         favor='scanpy',
-                         n_hvg=args.n_hvg,
-                         batch_key='src',
-                         key=input_key)
-        elif modality == 'adt':
-            print("  Preprocessing ADT data")
-            ADT_preprocess(adata_list,
-                         batch_corr=args.batch_corr,
-                         batch_key='src',
-                         key=input_key)
-        elif modality == 'atac':
-            print("  Preprocessing ATAC data")
-            Epigenome_preprocess(adata_list,
-                               batch_corr=args.batch_corr,
-                               n_peak=args.n_peak,
-                               batch_key='src',
-                               key=input_key)
-    
-    return input_dict, input_key
-
-def setup_gpu_monitoring(gpu_id):
-    """Setup GPU monitoring"""
-    try:
-        pynvml.nvmlInit()
-        handle = pynvml.nvmlDeviceGetHandleByIndex(gpu_id)
-        info = pynvml.nvmlDeviceGetMemoryInfo(handle)
-        return handle, info.used / (1024 * 1024)
-    except:
-        print("Warning: GPU monitoring not available")
-        return None, 0
-
-def train_spamosaic(input_dict, input_key, args):
-    """Train SpaMosaic model"""
-    print("Training SpaMosaic model...")
-    
-    # Setup GPU monitoring
-    gpu_handle, gpu_memory_before = setup_gpu_monitoring(args.gpu)
-    
-    # Create model
-    device = f'cuda:{args.gpu}' if args.gpu >= 0 else 'cpu'
-    model = SpaMosaic(
-        modBatch_dict=input_dict,
-        input_key=input_key,
-        batch_key='src',
-        intra_knn=args.intra_knn,
-        inter_knn=args.inter_knn,
-        w_g=args.w_g,
-        seed=args.seed,
-        device=device
+    # RNA preprocessing
+    RNA_preprocess(
+        input_dict['rna'], 
+        batch_corr=True, 
+        favor='scanpy', 
+        n_hvg=5000, 
+        batch_key='src', 
+        key=input_key
     )
     
-    # Training
+    # Secondary modality preprocessing
+    if modality == 'adt':
+        ADT_preprocess(
+            input_dict['adt'], 
+            batch_corr=True, 
+            batch_key='src', 
+            key=input_key
+        )
+    elif modality == 'atac':
+        Epigenome_preprocess(
+            input_dict['atac'], 
+            batch_corr=True, 
+            batch_key='src', 
+            key=input_key
+        )
+
+    # === Train SpaMosaic Model ===
+    print("Initializing SpaMosaic model...")
+    # For vertical integration (single section, multi-modal), we don't need inter_knn_base and w_g
+    model = SpaMosaic(
+        modBatch_dict=input_dict, 
+        input_key=input_key,
+        batch_key='src', 
+        intra_knns=10,
+        seed=args.seed,
+        device=args.device
+    )
+
+    print("Training SpaMosaic model...")
     start_time = time.time()
-    model.train(net='wlgcn', lr=args.lr, T=0.01, n_epochs=args.epochs)
-    
-    # Inference
+    model.train(net='wlgcn', lr=0.01, T=0.01, n_epochs=100)
+    end_time = time.time()
+    print('Training time:', end_time - start_time)
+
+    # === Get Embeddings ===
+    print("Inferring embeddings...")
     ad_embs = model.infer_emb(input_dict, emb_key='emb', final_latent_key='merged_emb')
+    
+    # For vertical integration, ad_embs contains one element (the integrated section)
+    adata = ad_embs[0].copy()
+    
+    # Store embeddings with consistent naming
+    adata.obsm['SpaMosaic'] = adata.obsm['merged_emb'].copy()
+    
+    # Get UMAP embeddings
     ad_mosaic = sc.concat(ad_embs)
     ad_mosaic = utls.get_umap(ad_mosaic, use_reps=['merged_emb'])
-    
-    # Calculate metrics
-    training_time = time.time() - start_time
-    gpu_memory_after = 0
-    if gpu_handle:
-        try:
-            info = pynvml.nvmlDeviceGetMemoryInfo(gpu_handle)
-            gpu_memory_after = info.used / (1024 * 1024)
-        except:
-            pass
-    
-    return model, ad_embs, ad_mosaic, training_time, gpu_memory_before, gpu_memory_after
+    adata.obsm['merged_emb_umap'] = ad_mosaic.obsm['merged_emb_umap'].copy()
 
-def perform_clustering(ad_mosaic, args):
-    """Perform clustering using SMOBench universal clustering"""
-    print("Performing clustering...")
-    
-    clustering_results = {}
-    
-    for method in args.clustering_methods:
-        print(f"  Clustering with {method}")
-        try:
-            # Use SMOBench universal clustering
-            result_adata = universal_clustering(
-                adata=ad_mosaic.copy(),
-                embedding_key='merged_emb',
-                method=method,
-                n_clusters=args.n_clusters,
-                random_state=args.seed
-            )
-            
-            # Get cluster labels
-            if method == 'mclust':
-                cluster_key = 'mclust'
-            else:
-                cluster_key = method
-                
-            if cluster_key in result_adata.obs.columns:
-                clustering_results[method] = result_adata.obs[cluster_key].values
-            else:
-                print(f"    Warning: {cluster_key} not found in results")
-                
-        except Exception as e:
-            print(f"    Error with {method}: {e}")
-            continue
-    
-    return clustering_results
+    # === Parse Dataset Info ===
+    dataset_name, subset_name = parse_dataset_info(args)
+    print(f"Detected dataset: {dataset_name}, subset: {subset_name}")
 
-def save_results(model, ad_embs, ad_mosaic, clustering_results, 
-                training_time, gpu_memory_before, gpu_memory_after, 
-                input_dict, args):
-    """Save all results"""
-    print("Saving results...")
-    os.makedirs(args.output_dir, exist_ok=True)
-    
-    # Save individual embeddings
-    embed_dir = join(args.output_dir, 'embeddings')
-    os.makedirs(embed_dir, exist_ok=True)
-    
-    for k in model.mod_list:
-        for bi in range(model.n_batches):
-            if input_dict[k][bi] is not None:
-                emb = input_dict[k][bi].obsm['emb']
-                np.save(join(embed_dir, f'{k}_batch{bi}_embedding.npy'), emb)
-    
-    # Save merged embeddings
-    for bi, ad in enumerate(ad_embs):
-        np.save(join(embed_dir, f'batch{bi}_merged_embedding.npy'), ad.obsm['merged_emb'])
-    
-    # Save clustering results
-    cluster_dir = join(args.output_dir, 'clustering')
-    os.makedirs(cluster_dir, exist_ok=True)
-    
-    for method, labels in clustering_results.items():
-        np.save(join(cluster_dir, f'{method}_labels.npy'), labels)
-    
-    # Save UMAP
-    if 'X_umap' in ad_mosaic.obsm:
-        np.save(join(args.output_dir, 'umap.npy'), ad_mosaic.obsm['X_umap'])
-    
-    # Save integrated AnnData
-    ad_mosaic.write_h5ad(join(args.output_dir, f'SpaMosaic_{args.dataset}_integrated.h5ad'))
-    
-    # Save metrics
-    metrics = {
-        'training_time': training_time,
-        'gpu_memory_before': gpu_memory_before,
-        'gpu_memory_after': gpu_memory_after,
-        'dataset': args.dataset,
-        'task': args.task,
-        'modalities': args.modalities,
-        'samples': args.samples,
-        'n_epochs': args.epochs,
-        'lr': args.lr,
-        'seed': args.seed
-    }
-    
-    with open(join(args.output_dir, 'metrics.txt'), 'w') as f:
-        for key, value in metrics.items():
-            f.write(f"{key}: {value}\n")
-    
-    print(f"Results saved to: {args.output_dir}")
+    # === Plot Save Path ===
+    plot_base_dir = "Results/plot"
+    method_name = args.method if args.method else "SpaMosaic"
+    plot_dir = os.path.join(plot_base_dir, method_name, dataset_name, subset_name)
+    os.makedirs(plot_dir, exist_ok=True)
+    print(f"Plot images will be saved to: {plot_dir}")
 
-def main():
-    """Main execution function"""
-    args = parse_arguments()
-    
-    print("="*60)
-    print(f"SpaMosaic Integration: {args.dataset}")
-    print(f"Task: {args.task}")
-    print(f"Modalities: {args.modalities}")
-    print(f"Samples: {args.samples}")
-    print("="*60)
-    
-    # Set random seed
-    np.random.seed(args.seed)
-    
-    # Load data
-    input_dict = load_data(args.data_dir, args.dataset, args.samples, args.modalities)
-    
-    if not input_dict:
-        print("Error: No data loaded")
-        return
-    
-    # Align features if needed
-    if args.task in ['horizontal', 'mosaic'] and len(args.samples) > 1:
-        input_dict = align_features(input_dict)
-    
-    # Add sample identifiers for multi-sample integration
-    if len(args.samples) > 1:
-        for modality, adata_list in input_dict.items():
-            for i, adata in enumerate(adata_list):
-                if adata is not None:
-                    adata.obs_names = f"s{i}_" + adata.obs_names
-    
-    # Preprocess data
-    input_dict, input_key = preprocess_data(input_dict, args)
-    
-    # Train model
-    model, ad_embs, ad_mosaic, training_time, gpu_before, gpu_after = train_spamosaic(
-        input_dict, input_key, args)
-    
-    # Perform clustering
-    clustering_results = perform_clustering(ad_mosaic, args)
-    
-    # Save results
-    save_results(model, ad_embs, ad_mosaic, clustering_results,
-                training_time, gpu_before, gpu_after, input_dict, args)
-    
-    print("SpaMosaic integration completed successfully!")
+    # === Clustering and Visualization ===
+    tools = ['mclust', 'louvain', 'leiden', 'kmeans']
+    # tools = ['leiden']
+    for tool in tools:
+        adata = universal_clustering(
+            adata,
+            n_clusters=args.cluster_nums,
+            used_obsm='SpaMosaic',
+            method=tool,
+            key=tool,
+            use_pca=False
+        )
+        
+        # Flip spatial coordinates for visualization
+        if 'spatial' in adata.obsm.keys():
+            adata.obsm['spatial'][:, 1] = -1 * adata.obsm['spatial'][:, 1]
 
-if __name__ == '__main__':
-    main()
+        fig, ax_list = plt.subplots(1, 2, figsize=(7, 3))
+        
+        # Generate UMAP for visualization
+        sc.pp.neighbors(adata, use_rep='SpaMosaic', n_neighbors=30)
+        sc.tl.umap(adata)
+
+        # Plot UMAP and spatial
+        sc.pl.umap(adata, color=tool, ax=ax_list[0], title=f'{method_name}-{tool}', s=20, show=False)
+        if 'spatial' in adata.obsm.keys():
+            sc.pl.embedding(adata, basis='spatial', color=tool, ax=ax_list[1], title=f'{method_name}-{tool}', s=20, show=False)
+        else:
+            # If no spatial coordinates, plot UMAP again
+            sc.pl.umap(adata, color=tool, ax=ax_list[1], title=f'{method_name}-{tool} (no spatial)', s=20, show=False)
+
+        plt.tight_layout(w_pad=0.3)
+        plt.savefig(
+            os.path.join(plot_dir, f'clustering_{tool}_umap_spatial.png'),
+            dpi=300,
+            bbox_inches='tight'
+        )
+        plt.close()
+
+    # === Save AnnData ===
+    save_dir = os.path.dirname(args.save_path)
+    os.makedirs(save_dir, exist_ok=True)
+    adata.write(args.save_path)
+    print(adata)
+    print('Saving results to...', args.save_path)
+
+
+if __name__ == "__main__":
+    # Set environment variables for R and threading
+    os.environ['R_HOME'] = '/home/zhenghong/miniconda3/envs/smobench/lib/R'
+    os.environ['OMP_NUM_THREADS'] = '1'
+    os.environ['MKL_NUM_THREADS'] = '1'
+    os.environ['NUMEXPR_NUM_THREADS'] = '1'
+    os.environ['OPENBLAS_NUM_THREADS'] = '1'
+
+    print("Starting SpaMosaic integration...")
+    parser = argparse.ArgumentParser(description='Run SpaMosaic integration')
+    parser.add_argument('--data_type', type=str, default='10x', help='Data type, e.g. 10x, SPOTS, MISAR')
+    parser.add_argument('--RNA_path', type=str, required=True, help='Path to RNA adata')
+    parser.add_argument('--ADT_path', type=str, default='', help='Path to ADT adata')
+    parser.add_argument('--ATAC_path', type=str, default='', help='Path to ATAC adata')
+    parser.add_argument('--save_path', type=str, required=True, help='Path to save integrated adata')
+    parser.add_argument('--seed', type=int, default=2024, help='Random seed')
+    parser.add_argument('--device', type=str, default='cuda:0', help='Device to use, e.g. cuda:0 or cpu')
+
+    parser.add_argument('--method', type=str, default='SpaMosaic', help='Method name for plotting')
+    parser.add_argument('--dataset', type=str, default='', help='Dataset name, e.g. Human_Lymph_Nodes/A1. If not provided, auto-extracted from paths.')
+
+    parser.add_argument('--cluster_nums', type=int, help='Number of clusters')
+
+    args = parser.parse_args()
+    main(args)

@@ -89,25 +89,6 @@ class Train:
            self.weight_factors = [Arg.RNA_weight, Arg.ADT_weight]
            self.learning_rate = 0.01
            self.weight_decay = 5e-2
-
-        elif self.datatype == 'Sim_L_ADT' or self.datatype == 'Sim_L_ATAC':
-            self.learning_rate = 0.0001
-            self.epochs = 50
-            self.weight_factors = [5, 1]
-            self.weight_decay = 0
-            self.EMA_coeffi = Arg.alpha
-        elif self.datatype == 'HT':
-            self.learning_rate = 0.001
-            self.epochs = 30
-            self.weight_factors = [Arg.RNA_weight, Arg.ADT_weight]
-            self.weight_decay = 5e-3
-            self.EMA_coeffi = Arg.alpha
-        elif self.datatype == 'MISAR':
-           self.learning_rate = 0.0001
-           self.epochs = 200
-           self.weight_factors = [1, 1]
-           self.weight_decay = 0
-           self.EMA_coeffi = Arg.alpha
     
     def train(self):
 
@@ -122,7 +103,6 @@ class Train:
 
         self.model.train()
         from torch.cuda.amp import GradScaler, autocast
-        train_time_start = time.time()
         for epoch in tqdm(range(self.epochs)):
             scaler = torch.cuda.amp.GradScaler()
             with autocast():
@@ -163,9 +143,6 @@ class Train:
                     1 - self.EMA_coeffi) * self.adj_feature_omics2.detach().clone()
 
         print("Model training finished!\n")
-        train_time_end = time.time()
-
-        print("Training time: {}".format(train_time_end-train_time_start))
 
         start_time = time.time()
     
@@ -176,17 +153,15 @@ class Train:
         end_time = time.time()
         print("Infer time: ", end_time - start_time)
 
-        emb_omics1 = F.normalize(results['emb_latent_omics1'].squeeze(0), p=2, eps=1e-12, dim=1)
-        emb_omics2 = F.normalize(results['emb_latent_omics2'].squeeze(0), p=2, eps=1e-12, dim=1)
-        emb_combined = F.normalize(results['emb_latent_combined'].squeeze(0), p=2, eps=1e-12, dim=1)
+        emb_omics1 = F.normalize(results['emb_latent_omics1'], p=2, eps=1e-12, dim=1)  
+        emb_omics2 = F.normalize(results['emb_latent_omics2'], p=2, eps=1e-12, dim=1)
+        emb_combined = F.normalize(results['emb_latent_combined'], p=2, eps=1e-12, dim=1)
 
         A_no_diag = self.paramed_adj_omics2().cpu().detach().clone()
         A_no_diag.fill_diagonal_(0)
         
         output = {'emb_latent_omics1': emb_omics1.detach().cpu().numpy(),
                   'emb_latent_omics2': emb_omics2.detach().cpu().numpy(),
-                  'recon_omics1': results['emb_recon_omics1'].detach().cpu().numpy(),
-                  'recon_omics2': results['emb_recon_omics2'].detach().cpu().numpy(),
                   'PRAGA': emb_combined.detach().cpu().numpy(),
                   'adj_feature_omics1': self.adj_feature_omics1.detach().cpu().numpy()
         }

@@ -3,7 +3,8 @@ import numpy as np
 import anndata as ad
 import scanpy as sc
 import torch
-import episcanpy.api as epi
+import episcanpy.preprocessing as epi_pp
+import episcanpy as epi
 
 from .Model import *
 from .Utils import run_leiden
@@ -123,7 +124,7 @@ def PRESENT_function(
     index = None
     if adata_rna is not None:
         sc.pp.filter_genes(adata_rna, min_cells=gene_min_cells)
-        #sc.pp.filter_cells(adata_rna, min_genes=1)
+        sc.pp.filter_cells(adata_rna, min_genes=1)
         sc.pp.highly_variable_genes(adata_rna, flavor="seurat_v3", n_top_genes=num_hvg, subset=True)
 
         if rdata_rna is not None: 
@@ -131,32 +132,32 @@ def PRESENT_function(
             if rdata_rna_anno is not None: rdata_rna_anno = rdata_rna.obs[rdata_rna_anno].values
 
         sc.pp.filter_genes(adata_rna, min_cells=1)
-        #sc.pp.filter_cells(adata_rna, min_genes=1)
+        sc.pp.filter_cells(adata_rna, min_genes=1)
         index = adata_rna.obs_names
 
     if adata_atac is not None:
-        epi.pp.filter_features(adata_atac, min_cells=int(adata_atac.shape[0] * peak_min_cells_fraction))
-        epi.pp.filter_cells(adata_atac, min_features=1)
+        epi_pp.filter_features(adata_atac, min_cells=int(adata_atac.shape[0] * peak_min_cells_fraction))
+        epi_pp.filter_cells(adata_atac, min_features=1)
 
         if rdata_atac is not None: 
             rdata_atac, adata_atac = ref_feature_alignment(rdata_atac, adata_atac, omics="ATAC")
             if rdata_atac_anno is not None: rdata_atac_anno = rdata_atac.obs[rdata_atac_anno].values
 
 
-        epi.pp.filter_features(adata_atac, min_cells=1)
-        epi.pp.filter_cells(adata_atac, min_features=1)
+        epi_pp.filter_features(adata_atac, min_cells=1)
+        epi_pp.filter_cells(adata_atac, min_features=1)
         index = np.intersect1d(adata_atac.obs_names, index) if index is not None else adata_atac.obs_names
 
     if adata_adt is not None:
         sc.pp.filter_genes(adata_adt, min_cells=protein_min_cells)
-        #sc.pp.filter_cells(adata_adt, min_genes=1)
+        sc.pp.filter_cells(adata_adt, min_genes=1)
 
         if rdata_adt is not None: 
             rdata_adt, adata_adt = ref_feature_alignment(rdata_adt, adata_adt, omics="ADT")
             if rdata_adt_anno is not None: rdata_adt_anno = rdata_adt.obs[rdata_adt_anno].values
 
         sc.pp.filter_genes(adata_adt, min_cells=1)
-        #sc.pp.filter_cells(adata_adt, min_genes=1)
+        sc.pp.filter_cells(adata_adt, min_genes=1)
         index = np.intersect1d(adata_adt.obs_names, index) if index is not None else adata_adt.obs_names
     assert index is not None, "Please input at least one omics layer in anndata.AnnData format"
 

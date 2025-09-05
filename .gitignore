@@ -1,8 +1,25 @@
-# Dataset files - exclude large data files from repository
+# Dataset files - exclude large data files from repository but keep structure
 SMOBench_Data.tar.gz
-Dataset/
-Results/
-*.h5ad
+Dataset/**/*.h5ad
+Dataset/**/*.h5
+Dataset/**/*.csv
+Dataset/**/*.xlsx
+Dataset/**/*.json
+Dataset/**/*.pkl
+Dataset/**/*.npz
+Dataset/**/*.npy
+Dataset/**/*.mat
+Dataset/**/MouseBrain*
+Dataset/**/Human_*
+Dataset/**/Mouse_*
+Dataset/**/3M_*
+# Keep Dataset structure and README
+!Dataset/README.md
+!Dataset/**/.gitkeep
+
+# Keep Results folder for benchmarking outputs  
+# Exclude large result files but keep structure
+# Results/**/*.h5ad
 
 # Python cache files
 __pycache__/

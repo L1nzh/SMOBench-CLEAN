@@ -10,6 +10,42 @@ from torch_geometric.data import HeteroData
 from torch_geometric.nn import HGTConv
 
 class HGT(torch.nn.Module):
+    """
+    Heterogeneous Graph Transformer (HGT) model for learning on heterogeneous graphs.
+
+    This implementation builds on PyTorch Geometric's HGTConv and supports 
+    node-type specific input projection, multi-layer HGT attention, and per-type decoders.
+
+    Parameters
+    ----------
+    in_channels : int
+        Input feature dimension for each node.
+    hidden_channels : int
+        Hidden feature dimension used in HGT layers.
+    num_heads : int
+        Number of attention heads in each HGTConv layer.
+    num_layers : int
+        Number of stacked HGTConv layers.
+    n_dec_l : int
+        Number of layers in decoder. If 1, uses a single linear layer.
+    data_obj : HeteroData
+        A PyG HeteroData object describing the node and edge types in the graph.
+    out_channels : int, optional
+        If specified, adds an intermediate projection layer to this dimension before decoding.
+
+    Attributes
+    ----------
+    lin_dict : nn.ModuleDict
+        Node-type specific input projections to hidden space.
+    convs : nn.ModuleList
+        List of stacked HGTConv layers.
+    decoder : nn.ModuleDict
+        Node-type specific decoders for reconstruction.
+    lin : nn.Linear, optional
+        Optional projection layer if out_channels is specified.
+    node_type : str
+        The target node type for downstream prediction.
+    """
     def __init__(self, in_channels, hidden_channels, num_heads, num_layers, n_dec_l, data_obj, out_channels=None):
         super().__init__()
 
@@ -41,7 +77,25 @@ class HGT(torch.nn.Module):
                 )
 
     def forward(self, x_dict, edge_index_dict):
-        # follow https://github.com/pyg-team/pytorch_geometric/blob/master/examples/hetero/hgt_dblp.py
+        """
+        Follow https://github.com/pyg-team/pytorch_geometric/blob/master/examples/hetero/hgt_dblp.py
+        
+        Forward pass of the HGT model.
+
+        Parameters
+        ----------
+        x_dict : Dict[str, Tensor]
+            Dictionary mapping node types to feature matrices.
+        edge_index_dict : Dict[Tuple[str, str, str], Tensor]
+            Dictionary mapping edge types to edge index tensors.
+
+        Returns
+        -------
+        z : Tensor
+            The final node embeddings for the primary node type, L2 normalized.
+        recon : Tensor
+            Reconstructed input for the primary node type (for autoencoder training).
+        """
         x_dict = {
             node_type: self.lin_dict[node_type](x).relu_()  
             for node_type, x in x_dict.items()

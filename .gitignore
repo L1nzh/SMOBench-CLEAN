@@ -18,8 +18,8 @@ Dataset/**/3M_*
 !Dataset/**/.gitkeep
 
 # Keep Results folder for benchmarking outputs  
-# Exclude large result files but keep structure
-# Results/**/*.h5ad
+# Exclude Results folder due to large file sizes - users can generate their own results
+Results/
 
 # Python cache files
 __pycache__/

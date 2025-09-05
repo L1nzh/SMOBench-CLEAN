@@ -1,0 +1,5 @@
+# Evaluation metrics and comparison results will be generated here
+# Files include:
+# - clustering_results.csv: Clustering performance metrics  
+# - integration_metrics.csv: Integration quality metrics
+# - method_comparison.csv: Cross-method comparison

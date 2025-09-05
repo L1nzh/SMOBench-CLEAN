@@ -17,9 +17,16 @@ Dataset/**/3M_*
 !Dataset/README.md
 !Dataset/**/.gitkeep
 
-# Keep Results folder for benchmarking outputs  
-# Exclude Results folder due to large file sizes - users can generate their own results
-Results/
+# Keep Results folder structure but exclude large files
+Results/**/*.h5ad
+Results/**/*.png  
+Results/**/*.jpg
+Results/**/*.pdf
+Results/**/*.csv
+Results/**/*checkpoint*
+# Keep Results structure and README
+!Results/README.md
+!Results/**/.gitkeep
 
 # Python cache files
 __pycache__/

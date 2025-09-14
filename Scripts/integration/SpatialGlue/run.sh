@@ -23,7 +23,7 @@ mkdir -p Results/adata/SpatialGlue Results/plot/SpatialGlue
 #   --save_path Results/adata/SpatialGlue/HLN/A1/SpatialGlue_HLN_A1.h5ad \
 #   --method SpatialGlue \
 #   --dataset Human_Lymph_Nodes/A1 \
-#   --cluster_nums 6
+#   --cluster_nums 10
 
 # # Human_Lymph_Nodes D1
 # echo "Processing Human_Lymph_Nodes D1..."
@@ -34,7 +34,7 @@ mkdir -p Results/adata/SpatialGlue Results/plot/SpatialGlue
 #   --save_path Results/adata/SpatialGlue/HLN/D1/SpatialGlue_HLN_D1.h5ad \
 #   --method SpatialGlue \
 #   --dataset Human_Lymph_Nodes/D1 \
-#   --cluster_nums 6
+#   --cluster_nums 11
 
 # echo "Processing Human_Tonsils datasets..."
 
@@ -47,7 +47,7 @@ mkdir -p Results/adata/SpatialGlue Results/plot/SpatialGlue
 #   --save_path Results/adata/SpatialGlue/HT/S1/SpatialGlue_HT_S1.h5ad \
 #   --method SpatialGlue \
 #   --dataset Human_Tonsils/S1 \
-#   --cluster_nums 6
+#   --cluster_nums 4
 
 # # Human_Tonsils S2
 # echo "Processing Human_Tonsils S2..."
@@ -58,7 +58,7 @@ mkdir -p Results/adata/SpatialGlue Results/plot/SpatialGlue
 #   --save_path Results/adata/SpatialGlue/HT/S2/SpatialGlue_HT_S2.h5ad \
 #   --method SpatialGlue \
 #   --dataset Human_Tonsils/S2 \
-#   --cluster_nums 6
+#   --cluster_nums 5
 
 # # Human_Tonsils S3
 # echo "Processing Human_Tonsils S3..."
@@ -69,7 +69,7 @@ mkdir -p Results/adata/SpatialGlue Results/plot/SpatialGlue
 #   --save_path Results/adata/SpatialGlue/HT/S3/SpatialGlue_HT_S3.h5ad \
 #   --method SpatialGlue \
 #   --dataset Human_Tonsils/S3 \
-#   --cluster_nums 6
+#   --cluster_nums 5
 
 # # === woGT RNA+ADT Datasets ===
 

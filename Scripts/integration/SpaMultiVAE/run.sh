@@ -23,7 +23,7 @@ echo "Processing Human_Lymph_Nodes datasets..."
 #   --save_path Results/adata/SpaMultiVAE/HLN/A1/SpaMultiVAE_HLN_A1.h5ad \
 #   --method SpaMultiVAE \
 #   --dataset Human_Lymph_Nodes/A1 \
-#   --cluster_nums 6
+#   --cluster_nums 10
 
 # # Human_Lymph_Nodes D1
 # echo "Processing Human_Lymph_Nodes D1..."
@@ -34,7 +34,7 @@ echo "Processing Human_Lymph_Nodes datasets..."
 #   --save_path Results/adata/SpaMultiVAE/HLN/D1/SpaMultiVAE_HLN_D1.h5ad \
 #   --method SpaMultiVAE \
 #   --dataset Human_Lymph_Nodes/D1 \
-#   --cluster_nums 6
+#   --cluster_nums 11
 
 # echo "Processing Human_Tonsils datasets..."
 
@@ -47,7 +47,7 @@ python Scripts/integration/SpaMultiVAE/run_spamultivae.py \
   --save_path Results/adata/SpaMultiVAE/HT/S1/SpaMultiVAE_HT_S1.h5ad \
   --method SpaMultiVAE \
   --dataset Human_Tonsils/S1 \
-  --cluster_nums 6
+  --cluster_nums 4
 
 # # Human_Tonsils S2
 # echo "Processing Human_Tonsils S2..."
@@ -58,7 +58,7 @@ python Scripts/integration/SpaMultiVAE/run_spamultivae.py \
 #   --save_path Results/adata/SpaMultiVAE/HT/S2/SpaMultiVAE_HT_S2.h5ad \
 #   --method SpaMultiVAE \
 #   --dataset Human_Tonsils/S2 \
-#   --cluster_nums 6
+#   --cluster_nums 5
 
 # # Human_Tonsils S3
 # echo "Processing Human_Tonsils S3..."
@@ -69,7 +69,7 @@ python Scripts/integration/SpaMultiVAE/run_spamultivae.py \
 #   --save_path Results/adata/SpaMultiVAE/HT/S3/SpaMultiVAE_HT_S3.h5ad \
 #   --method SpaMultiVAE \
 #   --dataset Human_Tonsils/S3 \
-#   --cluster_nums 6
+#   --cluster_nums 5
 
 # # === woGT RNA+ADT Datasets ===
 
@@ -166,21 +166,7 @@ python Scripts/integration/SpaMultiVAE/run_spamultivae.py \
 #     fi
 # done
 
-# # === 3M Simulation Dataset ===
-
-# echo "Processing 3M Simulation dataset..."
-
-# if [ -f "Dataset/withGT/3M_Simulation/adata_RNA.h5ad" ] && [ -f "Dataset/withGT/3M_Simulation/adata_ADT.h5ad" ]; then
-#     echo "Processing 3M Simulation (RNA+ADT)..."
-#     python Scripts/integration/SpaMultiVAE/run_spamultivae.py \
-#       --data_type simulation \
-#       --RNA_path Dataset/withGT/3M_Simulation/adata_RNA.h5ad \
-#       --ADT_path Dataset/withGT/3M_Simulation/adata_ADT.h5ad \
-#       --save_path Results/adata/SpaMultiVAE/3M_Simulation/SpaMultiVAE_3M_Sim.h5ad \
-#       --method SpaMultiVAE \
-#       --dataset 3M_Simulation/Simulation \
-#       --cluster_nums 5
-# fi
+# 
 
 echo "SpaMultiVAE processing completed!"
 echo "End time: $(date)"

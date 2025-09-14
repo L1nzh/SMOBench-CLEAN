@@ -23,7 +23,7 @@ python Scripts/integration/PRAGA/run_praga.py \
   --save_path Results/adata/PRAGA/HLN/A1/PRAGA_HLN_A1.h5ad \
   --method PRAGA \
   --dataset Human_Lymph_Nodes/A1 \
-  --cluster_nums 6
+  --cluster_nums 10
 
 # Human_Lymph_Nodes D1
 echo "Processing Human_Lymph_Nodes D1..."
@@ -34,7 +34,7 @@ python Scripts/integration/PRAGA/run_praga.py \
   --save_path Results/adata/PRAGA/HLN/D1/PRAGA_HLN_D1.h5ad \
   --method PRAGA \
   --dataset Human_Lymph_Nodes/D1 \
-  --cluster_nums 6
+  --cluster_nums 11
 
 echo "Processing Human_Tonsils datasets..."
 
@@ -47,7 +47,7 @@ python Scripts/integration/PRAGA/run_praga.py \
   --save_path Results/adata/PRAGA/HT/S1/PRAGA_HT_S1.h5ad \
   --method PRAGA \
   --dataset Human_Tonsils/S1 \
-  --cluster_nums 6
+  --cluster_nums 4
 
 # Human_Tonsils S2
 echo "Processing Human_Tonsils S2..."
@@ -58,7 +58,7 @@ python Scripts/integration/PRAGA/run_praga.py \
   --save_path Results/adata/PRAGA/HT/S2/PRAGA_HT_S2.h5ad \
   --method PRAGA \
   --dataset Human_Tonsils/S2 \
-  --cluster_nums 6
+  --cluster_nums 5
 
 # Human_Tonsils S3
 echo "Processing Human_Tonsils S3..."
@@ -69,7 +69,7 @@ python Scripts/integration/PRAGA/run_praga.py \
   --save_path Results/adata/PRAGA/HT/S3/PRAGA_HT_S3.h5ad \
   --method PRAGA \
   --dataset Human_Tonsils/S3 \
-  --cluster_nums 6
+  --cluster_nums 5
 
 # === woGT RNA+ADT Datasets ===
 

@@ -23,7 +23,7 @@ mkdir -p Results/adata/PRESENT Results/plot/PRESENT
 #   --save_path Results/adata/PRESENT/HLN/A1/PRESENT_HLN_A1.h5ad \
 #   --method PRESENT \
 #   --dataset Human_Lymph_Nodes/A1 \
-#   --cluster_nums 6
+#   --cluster_nums 10
 
 # # Human_Lymph_Nodes D1
 # echo "Processing Human_Lymph_Nodes D1..."
@@ -34,7 +34,7 @@ mkdir -p Results/adata/PRESENT Results/plot/PRESENT
 #   --save_path Results/adata/PRESENT/HLN/D1/PRESENT_HLN_D1.h5ad \
 #   --method PRESENT \
 #   --dataset Human_Lymph_Nodes/D1 \
-#   --cluster_nums 6
+#   --cluster_nums 11
 
 # echo "Processing Human_Tonsils datasets..."
 
@@ -47,7 +47,7 @@ conda run -n smobench python Scripts/integration/PRESENT/run_present.py \
   --save_path Results/adata/PRESENT/HT/S1/PRESENT_HT_S1.h5ad \
   --method PRESENT \
   --dataset Human_Tonsils/S1 \
-  --cluster_nums 6
+  --cluster_nums 4
 
 # # Human_Tonsils S2
 # echo "Processing Human_Tonsils S2..."
@@ -58,7 +58,7 @@ conda run -n smobench python Scripts/integration/PRESENT/run_present.py \
 #   --save_path Results/adata/PRESENT/HT/S2/PRESENT_HT_S2.h5ad \
 #   --method PRESENT \
 #   --dataset Human_Tonsils/S2 \
-#   --cluster_nums 6
+#   --cluster_nums 5
 
 # # Human_Tonsils S3
 # echo "Processing Human_Tonsils S3..."
@@ -69,7 +69,7 @@ conda run -n smobench python Scripts/integration/PRESENT/run_present.py \
 #   --save_path Results/adata/PRESENT/HT/S3/PRESENT_HT_S3.h5ad \
 #   --method PRESENT \
 #   --dataset Human_Tonsils/S3 \
-#   --cluster_nums 6
+#   --cluster_nums 5
 
 # # === woGT RNA+ADT Datasets ===
 
@@ -166,21 +166,7 @@ conda run -n smobench python Scripts/integration/PRESENT/run_present.py \
 #     fi
 # done
 
-# # === 3M Simulation Dataset ===
-
-# echo "Processing 3M Simulation dataset..."
-
-# if [ -f "Dataset/withGT/3M_Simulation/adata_RNA.h5ad" ] && [ -f "Dataset/withGT/3M_Simulation/adata_ADT.h5ad" ]; then
-#     echo "Processing 3M Simulation (RNA+ADT)..."
-#     python Scripts/integration/PRESENT/run_present.py \
-#       --data_type simulation \
-#       --RNA_path Dataset/withGT/3M_Simulation/adata_RNA.h5ad \
-#       --ADT_path Dataset/withGT/3M_Simulation/adata_ADT.h5ad \
-#       --save_path Results/adata/PRESENT/3M_Simulation/PRESENT_3M_Sim.h5ad \
-#       --method PRESENT \
-#       --dataset 3M_Simulation/Simulation \
-#       --cluster_nums 5
-# fi
+# 
 
 echo "PRESENT processing completed!"
 echo "End time: $(date)"

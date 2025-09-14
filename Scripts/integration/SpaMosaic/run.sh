@@ -23,7 +23,7 @@ python Scripts/integration/SpaMosaic/run_spamosaic.py \
   --save_path Results/adata/SpaMosaic/HLN/A1/SpaMosaic_HLN_A1.h5ad \
   --method SpaMosaic \
   --dataset Human_Lymph_Nodes/A1 \
-  --cluster_nums 6
+  --cluster_nums 10
 
 # Human_Lymph_Nodes D1
 echo "Processing Human_Lymph_Nodes D1..."
@@ -34,7 +34,7 @@ python Scripts/integration/SpaMosaic/run_spamosaic.py \
   --save_path Results/adata/SpaMosaic/HLN/D1/SpaMosaic_HLN_D1.h5ad \
   --method SpaMosaic \
   --dataset Human_Lymph_Nodes/D1 \
-  --cluster_nums 6
+  --cluster_nums 11
 
 echo "Processing Human_Tonsils datasets..."
 
@@ -47,7 +47,7 @@ python Scripts/integration/SpaMosaic/run_spamosaic.py \
   --save_path Results/adata/SpaMosaic/HT/S1/SpaMosaic_HT_S1.h5ad \
   --method SpaMosaic \
   --dataset Human_Tonsils/S1 \
-  --cluster_nums 6
+  --cluster_nums 4
 
 # Human_Tonsils S2
 echo "Processing Human_Tonsils S2..."
@@ -58,7 +58,7 @@ python Scripts/integration/SpaMosaic/run_spamosaic.py \
   --save_path Results/adata/SpaMosaic/HT/S2/SpaMosaic_HT_S2.h5ad \
   --method SpaMosaic \
   --dataset Human_Tonsils/S2 \
-  --cluster_nums 6
+  --cluster_nums 5
 
 # Human_Tonsils S3
 echo "Processing Human_Tonsils S3..."
@@ -69,7 +69,7 @@ python Scripts/integration/SpaMosaic/run_spamosaic.py \
   --save_path Results/adata/SpaMosaic/HT/S3/SpaMosaic_HT_S3.h5ad \
   --method SpaMosaic \
   --dataset Human_Tonsils/S3 \
-  --cluster_nums 6
+  --cluster_nums 5
 
 # === woGT RNA+ADT Datasets ===
 
@@ -166,21 +166,7 @@ for brain_type in "${brain_types[@]}"; do
     fi
 done
 
-# # === 3M Simulation Dataset ===
-
-# echo "Processing 3M Simulation dataset..."
-
-# if [ -f "Dataset/withGT/3M_Simulation/adata_RNA.h5ad" ] && [ -f "Dataset/withGT/3M_Simulation/adata_ADT.h5ad" ]; then
-#     echo "Processing 3M Simulation (RNA+ADT)..."
-#     python Scripts/integration/SpaMosaic/run_spamosaic.py \
-#       --data_type simulation \
-#       --RNA_path Dataset/withGT/3M_Simulation/adata_RNA.h5ad \
-#       --ADT_path Dataset/withGT/3M_Simulation/adata_ADT.h5ad \
-#       --save_path Results/adata/SpaMosaic/3M_Simulation/SpaMosaic_3M_Sim.h5ad \
-#       --method SpaMosaic \
-#       --dataset 3M_Simulation/Simulation \
-#       --cluster_nums 5
-# fi
+# 
 
 echo "SpaMosaic processing completed!"
 echo "End time: $(date)"

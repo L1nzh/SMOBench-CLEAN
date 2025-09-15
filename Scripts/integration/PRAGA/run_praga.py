@@ -223,12 +223,14 @@ def main(args):
     # Train the model
     output = model.train()
     end_time = time.time()
-    print('Training time:', end_time - start_time)
+    train_time = end_time - start_time
+    print('Training time:', train_time)
 
     # === Build Result AnnData ===
     # Use the first dataset (RNA) as the base
     adata = data['adata_omics1'].copy()
     adata.obsm['PRAGA'] = output['PRAGA']
+    adata.uns['train_time'] = train_time
     
     # === Parse Dataset Info ===
     dataset_name, subset_name = parse_dataset_info(args)

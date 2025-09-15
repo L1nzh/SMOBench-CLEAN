@@ -164,6 +164,9 @@ def main(args):
         adata_omics1_high = adata_omics1[:, adata_omics1.var['highly_variable']]
         adata_omics1.obsm['feat'] = pca(adata_omics1_high, n_comps=adata_omics2.obsm['X_lsi'].shape[1])
 
+    # === Start training time recording ===
+    start_time = time.time()
+    
     # === Encoding phase ===
     print("Encoding phase...")
     
@@ -325,7 +328,6 @@ def main(args):
 
     # Final integration training
     seed_everything(2025)
-    start_time = time.time()
     result = train_and_infer(
         features_omics1=features_omics1,
         features_omics2=features_omics2,
@@ -336,12 +338,16 @@ def main(args):
         device=device,
         epochs=200
     )
+    
+    # === End training time recording ===
     end_time = time.time()
-    print('Training time:', end_time - start_time)
+    train_time = end_time - start_time
+    print('Total training time:', train_time)
 
     # === Build Result AnnData ===
     adata = adata1.copy()
     adata.obsm['CANDIES'] = result['emb_latent_combined'].detach().cpu().numpy().copy()
+    adata.uns['train_time'] = train_time
     
     # === Parse Dataset Info ===
     dataset_name, subset_name = parse_dataset_info(args)

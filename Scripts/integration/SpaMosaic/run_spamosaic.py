@@ -127,7 +127,8 @@ def main(args):
     start_time = time.time()
     model.train(net='wlgcn', lr=0.01, T=0.01, n_epochs=100)
     end_time = time.time()
-    print('Training time:', end_time - start_time)
+    train_time = end_time - start_time
+    print('Training time:', train_time)
 
     # === Get Embeddings ===
     print("Inferring embeddings...")
@@ -138,6 +139,7 @@ def main(args):
     
     # Store embeddings with consistent naming
     adata.obsm['SpaMosaic'] = adata.obsm['merged_emb'].copy()
+    adata.uns['train_time'] = train_time
     
     # Get UMAP embeddings
     ad_mosaic = sc.concat(ad_embs)

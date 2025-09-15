@@ -216,7 +216,8 @@ def main(args):
     )
     
     end_time = time.time()
-    print('Training time:', end_time - start_time)
+    train_time = end_time - start_time
+    print('Training time:', train_time)
 
     # === Get embeddings ===
     print("Extracting latent embeddings...")
@@ -268,12 +269,14 @@ def main(args):
         
         # Use enhanced data for clustering
         adata = adata_enhanced.copy()
+        adata.uns['train_time'] = train_time
         
     else:
         # === Build Result AnnData ===
         # Use the first dataset (RNA) as the base
         adata = adata_rna.copy()
         adata.obsm['SpaMultiVAE'] = final_latent
+        adata.uns['train_time'] = train_time
     
     # === Parse Dataset Info ===
     dataset_name, subset_name = parse_dataset_info(args)

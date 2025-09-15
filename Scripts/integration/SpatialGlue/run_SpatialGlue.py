@@ -102,13 +102,15 @@ def main(args):
     start_time = time.time()
     output = model.train()
     end_time = time.time()
-    print('training time:', end_time - start_time)
+    train_time = end_time - start_time
+    print('training time:', train_time)
 
     # === 构建结果 AnnData ===
     adata = adata_omics1.copy()
     adata.obsm['emb_latent_omics1'] = output['emb_latent_omics1'].copy()
     adata.obsm['emb_latent_omics2'] = output['emb_latent_omics2'].copy()
     adata.obsm['SpatialGlue'] = output['SpatialGlue'].copy()
+    adata.uns['train_time'] = train_time
 
     # === 解析数据集信息 ===
     dataset_name, subset_name = parse_dataset_info(args)

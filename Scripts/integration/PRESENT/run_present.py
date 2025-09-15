@@ -122,12 +122,14 @@ def main(args):
     )
     
     end_time = time.time()
-    print('Training time:', end_time - start_time)
+    train_time = end_time - start_time
+    print('Training time:', train_time)
 
     # === Build Result AnnData ===
     # Use the integrated result
     adata = adata_integrated.copy()
     adata.obsm['PRESENT'] = adata_integrated.obsm['embeddings']
+    adata.uns['train_time'] = train_time
     
     # === Parse Dataset Info ===
     dataset_name, subset_name = parse_dataset_info(args)

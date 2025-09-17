@@ -93,6 +93,32 @@ def construct_graph_by_coordinate(cell_position, n_neighbors=10):
 def construct_graph_by_feature(adata_omics1, adata_omics2, k=20, mode="connectivity", metric="correlation",
                                include_self=False):
     """Constructing feature neighbor graph according to expresss profiles"""
+    
+    # Check for NaN values and handle them
+    feat1 = adata_omics1.obsm['feat']
+    feat2 = adata_omics2.obsm['feat']
+    
+    # Handle NaN values in features
+    if np.isnan(feat1).any():
+        print(f"Warning: Found {np.isnan(feat1).sum()} NaN values in omics1 features, replacing with zeros")
+        feat1 = np.nan_to_num(feat1, nan=0.0)
+        adata_omics1.obsm['feat'] = feat1
+    
+    if np.isnan(feat2).any():
+        print(f"Warning: Found {np.isnan(feat2).sum()} NaN values in omics2 features, replacing with zeros")
+        feat2 = np.nan_to_num(feat2, nan=0.0)
+        adata_omics2.obsm['feat'] = feat2
+    
+    # Check for infinite values and handle them
+    if np.isinf(feat1).any():
+        print(f"Warning: Found {np.isinf(feat1).sum()} infinite values in omics1 features, replacing with zeros")
+        feat1 = np.nan_to_num(feat1, posinf=0.0, neginf=0.0)
+        adata_omics1.obsm['feat'] = feat1
+    
+    if np.isinf(feat2).any():
+        print(f"Warning: Found {np.isinf(feat2).sum()} infinite values in omics2 features, replacing with zeros")
+        feat2 = np.nan_to_num(feat2, posinf=0.0, neginf=0.0)
+        adata_omics2.obsm['feat'] = feat2
 
     feature_graph_omics1 = kneighbors_graph(adata_omics1.obsm['feat'], k, mode=mode, metric=metric,
                                             include_self=include_self)

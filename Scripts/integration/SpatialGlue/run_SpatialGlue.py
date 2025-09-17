@@ -111,6 +111,20 @@ def main(args):
     adata.obsm['emb_latent_omics2'] = output['emb_latent_omics2'].copy()
     adata.obsm['SpatialGlue'] = output['SpatialGlue'].copy()
     adata.uns['train_time'] = train_time
+    
+    # === Clean embeddings for clustering ===
+    import numpy as np
+    embeddings_clean = adata.obsm['SpatialGlue'].copy()
+    
+    # Check for and handle infinite/NaN values
+    if np.any(~np.isfinite(embeddings_clean)):
+        print("Warning: Found infinite or NaN values in embeddings. Cleaning...")
+        embeddings_clean[np.isinf(embeddings_clean)] = np.sign(embeddings_clean[np.isinf(embeddings_clean)]) * 1e10
+        embeddings_clean[np.isnan(embeddings_clean)] = 0
+        adata.obsm['SpatialGlue'] = embeddings_clean
+        print(f"Cleaned embeddings shape: {embeddings_clean.shape}")
+    else:
+        print("Embeddings are clean (no inf/NaN values)")
 
     # === 解析数据集信息 ===
     dataset_name, subset_name = parse_dataset_info(args)
@@ -123,9 +137,12 @@ def main(args):
     os.makedirs(plot_dir, exist_ok=True)
     print(f"Plot images will be saved to: {plot_dir}")
 
+    # === 计算UMAP (只计算一次) ===
+    sc.pp.neighbors(adata, use_rep='SpatialGlue', n_neighbors=30)
+    sc.tl.umap(adata)
+
     # === 聚类与可视化 ===
     tools = ['mclust', 'louvain', 'leiden', 'kmeans']
-    # tools = ['mclust']
     for tool in tools:
         adata = universal_clustering(
             adata,
@@ -138,8 +155,6 @@ def main(args):
         adata.obsm['spatial'][:, 1] = -1 * adata.obsm['spatial'][:, 1]
 
         fig, ax_list = plt.subplots(1, 2, figsize=(7, 3))
-        sc.pp.neighbors(adata, use_rep='SpatialGlue', n_neighbors=30)
-        sc.tl.umap(adata)
 
         sc.pl.umap(adata, color=tool, ax=ax_list[0], title=f'{method_name}-{tool}', s=20, show=False)
         sc.pl.embedding(adata, basis='spatial', color=tool, ax=ax_list[1], title=f'{method_name}-{tool}', s=20, show=False)
@@ -152,6 +167,14 @@ def main(args):
         )
         plt.close()
 
+    # === 清理临时变量 ===
+    # Remove temporary clustering results from universal_clustering
+    temp_cols = [col for col in adata.obs.columns if 'tmp_search' in col]
+    for col in temp_cols:
+        del adata.obs[col]
+        if col in adata.uns:
+            del adata.uns[col]
+    
     # === 保存 AnnData ===
     save_dir = os.path.dirname(args.save_path)
     os.makedirs(save_dir, exist_ok=True)

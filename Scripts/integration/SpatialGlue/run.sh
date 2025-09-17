@@ -2,7 +2,7 @@
 
 # Comprehensive SpatialGlue run script for all datasets
 # Use relative paths for portability - script should be run from SMOBench root directory
-# Cluster numbers: HLN:6 HT:6 mouse_thymus:8 mouse_spleen:5 mouse_brain:18 3M:5 misar:16
+# Cluster numbers: HLN_A1:10 HLN_D1:11 HT_S1:4 HT_S2:5 HT_S3:5 mouse_thymus:8 mouse_spleen:5 mouse_brain:18 3M:5 MISAR_S1:8,12,12,14 MISAR_S2:13,14,15,16
 
 echo "Starting comprehensive SpatialGlue processing..."
 echo "Start time: $(date)"
@@ -10,98 +10,98 @@ echo "Start time: $(date)"
 # Create base results directory
 mkdir -p Results/adata/SpatialGlue Results/plot/SpatialGlue
 
-# # === withGT RNA+ADT Datasets ===
+# === withGT RNA+ADT Datasets ===
 
-# echo "Processing Human_Lymph_Nodes datasets..."
+echo "Processing Human_Lymph_Nodes datasets..."
 
-# # Human_Lymph_Nodes A1
-# echo "Processing Human_Lymph_Nodes A1..."
-# python Scripts/integration/SpatialGlue/run_SpatialGlue.py \
-#   --data_type 10x \
-#   --RNA_path Dataset/withGT/RNA_ADT/Human_Lymph_Nodes/A1/adata_RNA.h5ad \
-#   --ADT_path Dataset/withGT/RNA_ADT/Human_Lymph_Nodes/A1/adata_ADT.h5ad \
-#   --save_path Results/adata/SpatialGlue/HLN/A1/SpatialGlue_HLN_A1.h5ad \
-#   --method SpatialGlue \
-#   --dataset Human_Lymph_Nodes/A1 \
-#   --cluster_nums 10
+# Human_Lymph_Nodes A1
+echo "Processing Human_Lymph_Nodes A1..."
+python Scripts/integration/SpatialGlue/run_SpatialGlue.py \
+  --data_type 10x \
+  --RNA_path Dataset/withGT/RNA_ADT/Human_Lymph_Nodes/A1/adata_RNA.h5ad \
+  --ADT_path Dataset/withGT/RNA_ADT/Human_Lymph_Nodes/A1/adata_ADT.h5ad \
+  --save_path Results/adata/SpatialGlue/HLN/A1/SpatialGlue_HLN_A1.h5ad \
+  --method SpatialGlue \
+  --dataset Human_Lymph_Nodes/A1 \
+  --cluster_nums 10
 
-# # Human_Lymph_Nodes D1
-# echo "Processing Human_Lymph_Nodes D1..."
-# python Scripts/integration/SpatialGlue/run_SpatialGlue.py \
-#   --data_type 10x \
-#   --RNA_path Dataset/withGT/RNA_ADT/Human_Lymph_Nodes/D1/adata_RNA.h5ad \
-#   --ADT_path Dataset/withGT/RNA_ADT/Human_Lymph_Nodes/D1/adata_ADT.h5ad \
-#   --save_path Results/adata/SpatialGlue/HLN/D1/SpatialGlue_HLN_D1.h5ad \
-#   --method SpatialGlue \
-#   --dataset Human_Lymph_Nodes/D1 \
-#   --cluster_nums 11
+# Human_Lymph_Nodes D1
+echo "Processing Human_Lymph_Nodes D1..."
+python Scripts/integration/SpatialGlue/run_SpatialGlue.py \
+  --data_type 10x \
+  --RNA_path Dataset/withGT/RNA_ADT/Human_Lymph_Nodes/D1/adata_RNA.h5ad \
+  --ADT_path Dataset/withGT/RNA_ADT/Human_Lymph_Nodes/D1/adata_ADT.h5ad \
+  --save_path Results/adata/SpatialGlue/HLN/D1/SpatialGlue_HLN_D1.h5ad \
+  --method SpatialGlue \
+  --dataset Human_Lymph_Nodes/D1 \
+  --cluster_nums 11
 
-# echo "Processing Human_Tonsils datasets..."
+echo "Processing Human_Tonsils datasets..."
 
-# # Human_Tonsils S1
-# echo "Processing Human_Tonsils S1..."
-# python Scripts/integration/SpatialGlue/run_SpatialGlue.py \
-#   --data_type 10x \
-#   --RNA_path Dataset/withGT/RNA_ADT/Human_Tonsils/S1/adata_RNA.h5ad \
-#   --ADT_path Dataset/withGT/RNA_ADT/Human_Tonsils/S1/adata_ADT.h5ad \
-#   --save_path Results/adata/SpatialGlue/HT/S1/SpatialGlue_HT_S1.h5ad \
-#   --method SpatialGlue \
-#   --dataset Human_Tonsils/S1 \
-#   --cluster_nums 4
+# Human_Tonsils S1
+echo "Processing Human_Tonsils S1..."
+python Scripts/integration/SpatialGlue/run_SpatialGlue.py \
+  --data_type 10x \
+  --RNA_path Dataset/withGT/RNA_ADT/Human_Tonsils/S1/adata_RNA.h5ad \
+  --ADT_path Dataset/withGT/RNA_ADT/Human_Tonsils/S1/adata_ADT.h5ad \
+  --save_path Results/adata/SpatialGlue/HT/S1/SpatialGlue_HT_S1.h5ad \
+  --method SpatialGlue \
+  --dataset Human_Tonsils/S1 \
+  --cluster_nums 4
 
-# # Human_Tonsils S2
-# echo "Processing Human_Tonsils S2..."
-# python Scripts/integration/SpatialGlue/run_SpatialGlue.py \
-#   --data_type 10x \
-#   --RNA_path Dataset/withGT/RNA_ADT/Human_Tonsils/S2/adata_RNA.h5ad \
-#   --ADT_path Dataset/withGT/RNA_ADT/Human_Tonsils/S2/adata_ADT.h5ad \
-#   --save_path Results/adata/SpatialGlue/HT/S2/SpatialGlue_HT_S2.h5ad \
-#   --method SpatialGlue \
-#   --dataset Human_Tonsils/S2 \
-#   --cluster_nums 5
+# Human_Tonsils S2
+echo "Processing Human_Tonsils S2..."
+python Scripts/integration/SpatialGlue/run_SpatialGlue.py \
+  --data_type 10x \
+  --RNA_path Dataset/withGT/RNA_ADT/Human_Tonsils/S2/adata_RNA.h5ad \
+  --ADT_path Dataset/withGT/RNA_ADT/Human_Tonsils/S2/adata_ADT.h5ad \
+  --save_path Results/adata/SpatialGlue/HT/S2/SpatialGlue_HT_S2.h5ad \
+  --method SpatialGlue \
+  --dataset Human_Tonsils/S2 \
+  --cluster_nums 5
 
-# # Human_Tonsils S3
-# echo "Processing Human_Tonsils S3..."
-# python Scripts/integration/SpatialGlue/run_SpatialGlue.py \
-#   --data_type 10x \
-#   --RNA_path Dataset/withGT/RNA_ADT/Human_Tonsils/S3/adata_RNA.h5ad \
-#   --ADT_path Dataset/withGT/RNA_ADT/Human_Tonsils/S3/adata_ADT.h5ad \
-#   --save_path Results/adata/SpatialGlue/HT/S3/SpatialGlue_HT_S3.h5ad \
-#   --method SpatialGlue \
-#   --dataset Human_Tonsils/S3 \
-#   --cluster_nums 5
+# Human_Tonsils S3
+echo "Processing Human_Tonsils S3..."
+python Scripts/integration/SpatialGlue/run_SpatialGlue.py \
+  --data_type 10x \
+  --RNA_path Dataset/withGT/RNA_ADT/Human_Tonsils/S3/adata_RNA.h5ad \
+  --ADT_path Dataset/withGT/RNA_ADT/Human_Tonsils/S3/adata_ADT.h5ad \
+  --save_path Results/adata/SpatialGlue/HT/S3/SpatialGlue_HT_S3.h5ad \
+  --method SpatialGlue \
+  --dataset Human_Tonsils/S3 \
+  --cluster_nums 5
 
-# # === woGT RNA+ADT Datasets ===
+# === woGT RNA+ADT Datasets ===
 
-# echo "Processing Mouse_Thymus datasets..."
+echo "Processing Mouse_Thymus datasets..."
 
-# # Mouse_Thymus datasets
-# for thymus_id in 1 2 3 4; do
-#     echo "Processing Mouse_Thymus${thymus_id}..."
-#     python Scripts/integration/SpatialGlue/run_SpatialGlue.py \
-#       --data_type Stereo-CITE-seq \
-#       --RNA_path Dataset/woGT/RNA_ADT/Mouse_Thymus/Mouse_Thymus${thymus_id}/adata_RNA.h5ad \
-#       --ADT_path Dataset/woGT/RNA_ADT/Mouse_Thymus/Mouse_Thymus${thymus_id}/adata_ADT.h5ad \
-#       --save_path Results/adata/SpatialGlue/Mouse_Thymus/Thymus${thymus_id}/SpatialGlue_MT_Thymus${thymus_id}.h5ad \
-#       --method SpatialGlue \
-#       --dataset Mouse_Thymus/Mouse_Thymus${thymus_id} \
-#       --cluster_nums 8
-# done
+# Mouse_Thymus datasets
+for thymus_id in 1 2 3 4; do
+    echo "Processing Mouse_Thymus${thymus_id}..."
+    python Scripts/integration/SpatialGlue/run_SpatialGlue.py \
+      --data_type Stereo-CITE-seq \
+      --RNA_path Dataset/woGT/RNA_ADT/Mouse_Thymus/Mouse_Thymus${thymus_id}/adata_RNA.h5ad \
+      --ADT_path Dataset/woGT/RNA_ADT/Mouse_Thymus/Mouse_Thymus${thymus_id}/adata_ADT.h5ad \
+      --save_path Results/adata/SpatialGlue/Mouse_Thymus/Thymus${thymus_id}/SpatialGlue_MT_Thymus${thymus_id}.h5ad \
+      --method SpatialGlue \
+      --dataset Mouse_Thymus/Mouse_Thymus${thymus_id} \
+      --cluster_nums 8
+done
 
-# echo "Processing Mouse_Spleen datasets..."
+echo "Processing Mouse_Spleen datasets..."
 
-# # Mouse_Spleen datasets
-# for spleen_id in 1 2; do
-#     echo "Processing Mouse_Spleen${spleen_id}..."
-#     python Scripts/integration/SpatialGlue/run_SpatialGlue.py \
-#       --data_type SPOTS \
-#       --RNA_path Dataset/woGT/RNA_ADT/Mouse_Spleen/Mouse_Spleen${spleen_id}/adata_RNA.h5ad \
-#       --ADT_path Dataset/woGT/RNA_ADT/Mouse_Spleen/Mouse_Spleen${spleen_id}/adata_ADT.h5ad \
-#       --save_path Results/adata/SpatialGlue/Mouse_Spleen/Spleen${spleen_id}/SpatialGlue_MS_Spleen${spleen_id}.h5ad \
-#       --method SpatialGlue \
-#       --dataset Mouse_Spleen/Mouse_Spleen${spleen_id} \
-#       --cluster_nums 5
-# done
+# Mouse_Spleen datasets
+for spleen_id in 1 2; do
+    echo "Processing Mouse_Spleen${spleen_id}..."
+    python Scripts/integration/SpatialGlue/run_SpatialGlue.py \
+      --data_type SPOTS \
+      --RNA_path Dataset/woGT/RNA_ADT/Mouse_Spleen/Mouse_Spleen${spleen_id}/adata_RNA.h5ad \
+      --ADT_path Dataset/woGT/RNA_ADT/Mouse_Spleen/Mouse_Spleen${spleen_id}/adata_ADT.h5ad \
+      --save_path Results/adata/SpatialGlue/Mouse_Spleen/Spleen${spleen_id}/SpatialGlue_MS_Spleen${spleen_id}.h5ad \
+      --method SpatialGlue \
+      --dataset Mouse_Spleen/Mouse_Spleen${spleen_id} \
+      --cluster_nums 5
+done
 
 # === RNA+ATAC Datasets ===
 
@@ -109,35 +109,111 @@ echo "Processing Mouse_Embryos RNA+ATAC datasets..."
 
 # Check if Mouse_Embryos datasets exist
 if [ -d "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1" ]; then
-    for embryo_stage in E11 E13 E15 E18; do
-        if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/${embryo_stage}/adata_RNA.h5ad" ]; then
-            echo "Processing Mouse_Embryos_S1 ${embryo_stage}..."
-            python Scripts/integration/SpatialGlue/run_SpatialGlue.py \
-              --data_type MISAR \
-              --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/${embryo_stage}/adata_RNA.h5ad \
-              --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/${embryo_stage}/adata_ATAC.h5ad \
-              --save_path Results/adata/SpatialGlue/MISAR_S1/${embryo_stage}/SpatialGlue_MISAR_S1_${embryo_stage}.h5ad \
-              --method SpatialGlue \
-              --dataset Mouse_Embryos_S1/${embryo_stage} \
-              --cluster_nums 16
-        fi
-    done
+    # E11: 8 clusters
+    if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E11/adata_RNA.h5ad" ]; then
+        echo "Processing Mouse_Embryos_S1 E11..."
+        python Scripts/integration/SpatialGlue/run_SpatialGlue.py \
+          --data_type MISAR \
+          --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E11/adata_RNA.h5ad \
+          --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E11/adata_ATAC.h5ad \
+          --save_path Results/adata/SpatialGlue/MISAR_S1/E11/SpatialGlue_MISAR_S1_E11.h5ad \
+          --method SpatialGlue \
+          --dataset Mouse_Embryos_S1/E11 \
+          --cluster_nums 8
+    fi
+    
+    # E13: 12 clusters
+    if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E13/adata_RNA.h5ad" ]; then
+        echo "Processing Mouse_Embryos_S1 E13..."
+        python Scripts/integration/SpatialGlue/run_SpatialGlue.py \
+          --data_type MISAR \
+          --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E13/adata_RNA.h5ad \
+          --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E13/adata_ATAC.h5ad \
+          --save_path Results/adata/SpatialGlue/MISAR_S1/E13/SpatialGlue_MISAR_S1_E13.h5ad \
+          --method SpatialGlue \
+          --dataset Mouse_Embryos_S1/E13 \
+          --cluster_nums 12
+    fi
+    
+    # E15: 12 clusters
+    if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E15/adata_RNA.h5ad" ]; then
+        echo "Processing Mouse_Embryos_S1 E15..."
+        python Scripts/integration/SpatialGlue/run_SpatialGlue.py \
+          --data_type MISAR \
+          --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E15/adata_RNA.h5ad \
+          --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E15/adata_ATAC.h5ad \
+          --save_path Results/adata/SpatialGlue/MISAR_S1/E15/SpatialGlue_MISAR_S1_E15.h5ad \
+          --method SpatialGlue \
+          --dataset Mouse_Embryos_S1/E15 \
+          --cluster_nums 12
+    fi
+    
+    # E18: 14 clusters
+    if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E18/adata_RNA.h5ad" ]; then
+        echo "Processing Mouse_Embryos_S1 E18..."
+        python Scripts/integration/SpatialGlue/run_SpatialGlue.py \
+          --data_type MISAR \
+          --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E18/adata_RNA.h5ad \
+          --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E18/adata_ATAC.h5ad \
+          --save_path Results/adata/SpatialGlue/MISAR_S1/E18/SpatialGlue_MISAR_S1_E18.h5ad \
+          --method SpatialGlue \
+          --dataset Mouse_Embryos_S1/E18 \
+          --cluster_nums 14
+    fi
 fi
 
 if [ -d "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2" ]; then
-    for embryo_stage in E11 E13 E15 E18; do
-        if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/${embryo_stage}/adata_RNA.h5ad" ]; then
-            echo "Processing Mouse_Embryos_S2 ${embryo_stage}..."
-            python Scripts/integration/SpatialGlue/run_SpatialGlue.py \
-              --data_type MISAR \
-              --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/${embryo_stage}/adata_RNA.h5ad \
-              --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/${embryo_stage}/adata_ATAC.h5ad \
-              --save_path Results/adata/SpatialGlue/MISAR_S2/${embryo_stage}/SpatialGlue_MISAR_S2_${embryo_stage}.h5ad \
-              --method SpatialGlue \
-              --dataset Mouse_Embryos_S2/${embryo_stage} \
-              --cluster_nums 16
-        fi
-    done
+    # E11: 13 clusters
+    if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E11/adata_RNA.h5ad" ]; then
+        echo "Processing Mouse_Embryos_S2 E11..."
+        python Scripts/integration/SpatialGlue/run_SpatialGlue.py \
+          --data_type MISAR \
+          --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E11/adata_RNA.h5ad \
+          --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E11/adata_ATAC.h5ad \
+          --save_path Results/adata/SpatialGlue/MISAR_S2/E11/SpatialGlue_MISAR_S2_E11.h5ad \
+          --method SpatialGlue \
+          --dataset Mouse_Embryos_S2/E11 \
+          --cluster_nums 13
+    fi
+    
+    # E13: 14 clusters
+    if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E13/adata_RNA.h5ad" ]; then
+        echo "Processing Mouse_Embryos_S2 E13..."
+        python Scripts/integration/SpatialGlue/run_SpatialGlue.py \
+          --data_type MISAR \
+          --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E13/adata_RNA.h5ad \
+          --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E13/adata_ATAC.h5ad \
+          --save_path Results/adata/SpatialGlue/MISAR_S2/E13/SpatialGlue_MISAR_S2_E13.h5ad \
+          --method SpatialGlue \
+          --dataset Mouse_Embryos_S2/E13 \
+          --cluster_nums 14
+    fi
+    
+    # E15: 15 clusters
+    if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E15/adata_RNA.h5ad" ]; then
+        echo "Processing Mouse_Embryos_S2 E15..."
+        python Scripts/integration/SpatialGlue/run_SpatialGlue.py \
+          --data_type MISAR \
+          --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E15/adata_RNA.h5ad \
+          --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E15/adata_ATAC.h5ad \
+          --save_path Results/adata/SpatialGlue/MISAR_S2/E15/SpatialGlue_MISAR_S2_E15.h5ad \
+          --method SpatialGlue \
+          --dataset Mouse_Embryos_S2/E15 \
+          --cluster_nums 15
+    fi
+    
+    # E18: 16 clusters
+    if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E18/adata_RNA.h5ad" ]; then
+        echo "Processing Mouse_Embryos_S2 E18..."
+        python Scripts/integration/SpatialGlue/run_SpatialGlue.py \
+          --data_type MISAR \
+          --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E18/adata_RNA.h5ad \
+          --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E18/adata_ATAC.h5ad \
+          --save_path Results/adata/SpatialGlue/MISAR_S2/E18/SpatialGlue_MISAR_S2_E18.h5ad \
+          --method SpatialGlue \
+          --dataset Mouse_Embryos_S2/E18 \
+          --cluster_nums 16
+    fi
 fi
 
 echo "Processing Mouse_Brain RNA+ATAC datasets..."

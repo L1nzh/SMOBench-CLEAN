@@ -2,7 +2,7 @@
 
 # Comprehensive SpaMV run script for all datasets
 # Use relative paths for portability - script should be run from SMOBench root directory
-# Cluster numbers: HLN:6 HT:6 mouse_thymus:8 mouse_spleen:5 mouse_brain:18 3M:5 misar:16
+# Cluster numbers: HLN_A1:10 HLN_D1:11 HT_S1:4 HT_S2:5 HT_S3:5 mouse_thymus:8 mouse_spleen:5 mouse_brain:18 3M:5 MISAR_S1:8,12,12,14 MISAR_S2:13,14,15,16
 
 echo "Starting comprehensive SpaMV processing..."
 echo "Start time: $(date)"
@@ -109,35 +109,111 @@ echo "Processing Mouse_Embryos RNA+ATAC datasets..."
 
 # Check if Mouse_Embryos datasets exist
 if [ -d "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1" ]; then
-    for embryo_stage in E11 E13 E15 E18; do
-        if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/${embryo_stage}/adata_RNA.h5ad" ]; then
-            echo "Processing Mouse_Embryos_S1 ${embryo_stage}..."
-            python Scripts/integration/SpaMV/run_spamv.py \
-              --data_type MISAR \
-              --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/${embryo_stage}/adata_RNA.h5ad \
-              --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/${embryo_stage}/adata_ATAC.h5ad \
-              --save_path Results/adata/SpaMV/MISAR_S1/${embryo_stage}/SpaMV_MISAR_S1_${embryo_stage}.h5ad \
-              --method SpaMV \
-              --dataset Mouse_Embryos_S1/${embryo_stage} \
-              --cluster_nums 16
-        fi
-    done
+    # E11: 8 clusters
+    if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E11/adata_RNA.h5ad" ]; then
+        echo "Processing Mouse_Embryos_S1 E11..."
+        python Scripts/integration/SpaMV/run_spamv.py \
+          --data_type MISAR \
+          --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E11/adata_RNA.h5ad \
+          --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E11/adata_ATAC.h5ad \
+          --save_path Results/adata/SpaMV/MISAR_S1/E11/SpaMV_MISAR_S1_E11.h5ad \
+          --method SpaMV \
+          --dataset Mouse_Embryos_S1/E11 \
+          --cluster_nums 8
+    fi
+    
+    # E13: 12 clusters
+    if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E13/adata_RNA.h5ad" ]; then
+        echo "Processing Mouse_Embryos_S1 E13..."
+        python Scripts/integration/SpaMV/run_spamv.py \
+          --data_type MISAR \
+          --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E13/adata_RNA.h5ad \
+          --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E13/adata_ATAC.h5ad \
+          --save_path Results/adata/SpaMV/MISAR_S1/E13/SpaMV_MISAR_S1_E13.h5ad \
+          --method SpaMV \
+          --dataset Mouse_Embryos_S1/E13 \
+          --cluster_nums 12
+    fi
+    
+    # E15: 12 clusters
+    if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E15/adata_RNA.h5ad" ]; then
+        echo "Processing Mouse_Embryos_S1 E15..."
+        python Scripts/integration/SpaMV/run_spamv.py \
+          --data_type MISAR \
+          --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E15/adata_RNA.h5ad \
+          --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E15/adata_ATAC.h5ad \
+          --save_path Results/adata/SpaMV/MISAR_S1/E15/SpaMV_MISAR_S1_E15.h5ad \
+          --method SpaMV \
+          --dataset Mouse_Embryos_S1/E15 \
+          --cluster_nums 12
+    fi
+    
+    # E18: 14 clusters
+    if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E18/adata_RNA.h5ad" ]; then
+        echo "Processing Mouse_Embryos_S1 E18..."
+        python Scripts/integration/SpaMV/run_spamv.py \
+          --data_type MISAR \
+          --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E18/adata_RNA.h5ad \
+          --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E18/adata_ATAC.h5ad \
+          --save_path Results/adata/SpaMV/MISAR_S1/E18/SpaMV_MISAR_S1_E18.h5ad \
+          --method SpaMV \
+          --dataset Mouse_Embryos_S1/E18 \
+          --cluster_nums 14
+    fi
 fi
 
 if [ -d "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2" ]; then
-    for embryo_stage in E11 E13 E15 E18; do
-        if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/${embryo_stage}/adata_RNA.h5ad" ]; then
-            echo "Processing Mouse_Embryos_S2 ${embryo_stage}..."
-            python Scripts/integration/SpaMV/run_spamv.py \
-              --data_type MISAR \
-              --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/${embryo_stage}/adata_RNA.h5ad \
-              --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/${embryo_stage}/adata_ATAC.h5ad \
-              --save_path Results/adata/SpaMV/MISAR_S2/${embryo_stage}/SpaMV_MISAR_S2_${embryo_stage}.h5ad \
-              --method SpaMV \
-              --dataset Mouse_Embryos_S2/${embryo_stage} \
-              --cluster_nums 16
-        fi
-    done
+    # E11: 13 clusters
+    if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E11/adata_RNA.h5ad" ]; then
+        echo "Processing Mouse_Embryos_S2 E11..."
+        python Scripts/integration/SpaMV/run_spamv.py \
+          --data_type MISAR \
+          --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E11/adata_RNA.h5ad \
+          --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E11/adata_ATAC.h5ad \
+          --save_path Results/adata/SpaMV/MISAR_S2/E11/SpaMV_MISAR_S2_E11.h5ad \
+          --method SpaMV \
+          --dataset Mouse_Embryos_S2/E11 \
+          --cluster_nums 13
+    fi
+    
+    # E13: 14 clusters
+    if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E13/adata_RNA.h5ad" ]; then
+        echo "Processing Mouse_Embryos_S2 E13..."
+        python Scripts/integration/SpaMV/run_spamv.py \
+          --data_type MISAR \
+          --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E13/adata_RNA.h5ad \
+          --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E13/adata_ATAC.h5ad \
+          --save_path Results/adata/SpaMV/MISAR_S2/E13/SpaMV_MISAR_S2_E13.h5ad \
+          --method SpaMV \
+          --dataset Mouse_Embryos_S2/E13 \
+          --cluster_nums 14
+    fi
+    
+    # E15: 15 clusters
+    if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E15/adata_RNA.h5ad" ]; then
+        echo "Processing Mouse_Embryos_S2 E15..."
+        python Scripts/integration/SpaMV/run_spamv.py \
+          --data_type MISAR \
+          --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E15/adata_RNA.h5ad \
+          --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E15/adata_ATAC.h5ad \
+          --save_path Results/adata/SpaMV/MISAR_S2/E15/SpaMV_MISAR_S2_E15.h5ad \
+          --method SpaMV \
+          --dataset Mouse_Embryos_S2/E15 \
+          --cluster_nums 15
+    fi
+    
+    # E18: 16 clusters
+    if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E18/adata_RNA.h5ad" ]; then
+        echo "Processing Mouse_Embryos_S2 E18..."
+        python Scripts/integration/SpaMV/run_spamv.py \
+          --data_type MISAR \
+          --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E18/adata_RNA.h5ad \
+          --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E18/adata_ATAC.h5ad \
+          --save_path Results/adata/SpaMV/MISAR_S2/E18/SpaMV_MISAR_S2_E18.h5ad \
+          --method SpaMV \
+          --dataset Mouse_Embryos_S2/E18 \
+          --cluster_nums 16
+    fi
 fi
 
 echo "Processing Mouse_Brain RNA+ATAC datasets..."

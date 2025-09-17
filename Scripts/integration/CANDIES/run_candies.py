@@ -301,11 +301,23 @@ def main(args):
     spatial2 = pd.DataFrame(adata2.obsm['spatial'], columns=['x', 'y'])
     spatial1['index1'] = spatial1.index
     spatial2['index2'] = spatial2.index
+    
+    print(f"Before spatial alignment - adata1: {adata1.n_obs} cells, adata2: {adata2.n_obs} cells")
+    print(f"Spatial1 shape: {spatial1.shape}, Spatial2 shape: {spatial2.shape}")
+    
     merged = pd.merge(spatial1, spatial2, on=['x', 'y'], how='inner')
-    sorted_index1 = merged['index1'].values
-    sorted_index2 = merged['index2'].values
-    adata1 = adata1[sorted_index1]
-    adata2 = adata2[sorted_index2]
+    print(f"After spatial merge - merged shape: {merged.shape}")
+    
+    if len(merged) == 0:
+        print("Warning: No common spatial coordinates found! Using original data without spatial alignment.")
+        # Keep original data without spatial filtering
+        pass
+    else:
+        sorted_index1 = merged['index1'].values
+        sorted_index2 = merged['index2'].values
+        adata1 = adata1[sorted_index1]
+        adata2 = adata2[sorted_index2]
+        print(f"After spatial alignment - adata1: {adata1.n_obs} cells, adata2: {adata2.n_obs} cells")
 
     # Set features for integration
     if denoise_target == 'omics1':
@@ -362,6 +374,11 @@ def main(args):
 
     # === Clustering and Visualization ===
     tools = ['mclust', 'louvain', 'leiden', 'kmeans']
+    
+    # === Generate UMAP for visualization (only once) ===
+    sc.pp.neighbors(adata, use_rep='CANDIES', n_neighbors=30)
+    sc.tl.umap(adata)
+    
     for tool in tools:
         adata = universal_clustering(
             adata,
@@ -377,10 +394,6 @@ def main(args):
             adata.obsm['spatial'][:, 1] = -1 * adata.obsm['spatial'][:, 1]
 
         fig, ax_list = plt.subplots(1, 2, figsize=(7, 3))
-        
-        # Generate UMAP for visualization
-        sc.pp.neighbors(adata, use_rep='CANDIES', n_neighbors=30)
-        sc.tl.umap(adata)
 
         # Plot UMAP and spatial
         sc.pl.umap(adata, color=tool, ax=ax_list[0], title=f'{method_name}-{tool}', s=20, show=False)

@@ -141,6 +141,20 @@ def main(args):
     adata.obsm['SpaMosaic'] = adata.obsm['merged_emb'].copy()
     adata.uns['train_time'] = train_time
     
+    # === Clean embeddings for clustering ===
+    import numpy as np
+    embeddings_clean = adata.obsm['SpaMosaic'].copy()
+    
+    # Check for and handle infinite/NaN values
+    if np.any(~np.isfinite(embeddings_clean)):
+        print("Warning: Found infinite or NaN values in embeddings. Cleaning...")
+        embeddings_clean[np.isinf(embeddings_clean)] = np.sign(embeddings_clean[np.isinf(embeddings_clean)]) * 1e10
+        embeddings_clean[np.isnan(embeddings_clean)] = 0
+        adata.obsm['SpaMosaic'] = embeddings_clean
+        print(f"Cleaned embeddings shape: {embeddings_clean.shape}")
+    else:
+        print("Embeddings are clean (no inf/NaN values)")
+    
     # Get UMAP embeddings
     ad_mosaic = sc.concat(ad_embs)
     ad_mosaic = utls.get_umap(ad_mosaic, use_reps=['merged_emb'])
@@ -159,7 +173,11 @@ def main(args):
 
     # === Clustering and Visualization ===
     tools = ['mclust', 'louvain', 'leiden', 'kmeans']
-    # tools = ['leiden']
+    
+    # === Generate UMAP for visualization (only once) ===
+    sc.pp.neighbors(adata, use_rep='SpaMosaic', n_neighbors=30)
+    sc.tl.umap(adata)
+    
     for tool in tools:
         adata = universal_clustering(
             adata,
@@ -175,10 +193,6 @@ def main(args):
             adata.obsm['spatial'][:, 1] = -1 * adata.obsm['spatial'][:, 1]
 
         fig, ax_list = plt.subplots(1, 2, figsize=(7, 3))
-        
-        # Generate UMAP for visualization
-        sc.pp.neighbors(adata, use_rep='SpaMosaic', n_neighbors=30)
-        sc.tl.umap(adata)
 
         # Plot UMAP and spatial
         sc.pl.umap(adata, color=tool, ax=ax_list[0], title=f'{method_name}-{tool}', s=20, show=False)
@@ -196,6 +210,14 @@ def main(args):
         )
         plt.close()
 
+    # === 清理临时变量 ===
+    # Remove temporary clustering results from universal_clustering
+    temp_cols = [col for col in adata.obs.columns if 'tmp_search' in col]
+    for col in temp_cols:
+        del adata.obs[col]
+        if col in adata.uns:
+            del adata.uns[col]
+    
     # === Save AnnData ===
     save_dir = os.path.dirname(args.save_path)
     os.makedirs(save_dir, exist_ok=True)

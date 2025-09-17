@@ -11,9 +11,9 @@ from torch.distributions import LogNormal, Bernoulli
 from torch.distributions.kl import kl_divergence
 import numpy as np
 import pandas as pd
-from SVGP import SVGP
-from I_PID import PIDControl
-from VAE_utils import *
+from .SVGP import SVGP
+from .I_PID import PIDControl
+from .VAE_utils import *
 from collections import deque
 
 
@@ -737,9 +737,7 @@ class SPAMULTIVAE(nn.Module):
                         torch.tensor(protein_ncounts, dtype=self.dtype), torch.tensor(protein_raw_counts, dtype=self.dtype))
 
         if train_size < 1:
-            train_len = int(len(dataset) * train_size)
-            val_len = len(dataset) - train_len
-            train_dataset, validate_dataset = random_split(dataset, [train_len, val_len])
+            train_dataset, validate_dataset = random_split(dataset=dataset, lengths=[train_size, 1.-train_size])
             validate_dataloader = DataLoader(validate_dataset, batch_size=batch_size, shuffle=True, drop_last=False)
         else:
             train_dataset = dataset
@@ -843,3 +841,6 @@ class SPAMULTIVAE(nn.Module):
 
         if save_model:
             torch.save(self.state_dict(), model_weights)
+
+
+

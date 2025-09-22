@@ -200,9 +200,9 @@ def batch_clustering(adata, n_clusters, used_obsm, methods=['leiden', 'louvain',
                 key=key,
                 **kwargs
             )
-            print(f"✅ {method} clustering completed -> adata.obs['{key}']")
+            print(f"{method} clustering completed -> adata.obs['{key}']")
         except Exception as e:
-            print(f"❌ {method} clustering failed: {e}")
+            print(f"{method} clustering failed: {e}")
     
     return adata
 

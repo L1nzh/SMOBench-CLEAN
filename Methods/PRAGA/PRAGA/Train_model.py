@@ -89,6 +89,12 @@ class Train:
            self.weight_factors = [Arg.RNA_weight, Arg.ADT_weight]
            self.learning_rate = 0.01
            self.weight_decay = 5e-2
+           
+        elif self.datatype == 'MISAR':
+           self.epochs = 50  # Reduce epochs for testing
+           self.weight_factors = [Arg.RNA_weight, Arg.ADT_weight]
+           self.learning_rate = 0.001  # Reduce learning rate for stability
+           self.weight_decay = 5e-2
     
     def train(self):
 
@@ -124,13 +130,29 @@ class Train:
 
                 clustering_loss = self.clustering(results['emb_latent_combined'], epoch)
 
+                # Check for NaN/inf values and handle them
+                if torch.isnan(loss) or torch.isinf(loss):
+                    print(f"Warning: loss is {loss}, skipping this iteration")
+                    continue
+                if torch.isnan(loss_fro) or torch.isinf(loss_fro):
+                    print(f"Warning: loss_fro is {loss_fro}, setting to 0")
+                    loss_fro = torch.tensor(0.0, device=loss.device)
+                if isinstance(clustering_loss, torch.Tensor) and (torch.isnan(clustering_loss) or torch.isinf(clustering_loss)):
+                    print(f"Warning: clustering_loss is {clustering_loss}, setting to 0")
+                    clustering_loss = torch.tensor(0.0, device=loss.device)
+
                 print(loss, loss_fro, clustering_loss)
 
                 loss = loss + clustering_loss + loss_fro
 
             self.optimizer.zero_grad()
-            loss.backward()
-            self.optimizer.step()
+            if not (torch.isnan(loss) or torch.isinf(loss)):
+                loss.backward()
+                # Add gradient clipping
+                torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0)
+                torch.nn.utils.clip_grad_norm_(self.paramed_adj_omics1.parameters(), max_norm=1.0)
+                torch.nn.utils.clip_grad_norm_(self.paramed_adj_omics2.parameters(), max_norm=1.0)
+                self.optimizer.step()
             # scheduler.step()
 
 

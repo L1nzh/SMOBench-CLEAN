@@ -16,7 +16,7 @@ class R5(nn.Module):
         self.N = 2
         self.begin = False
         self.datatype = data_type
-        self.device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
+        self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         if self.datatype == 'SPOTS':
             self.weight = 1
             self.arg = Arg(init_K=10)
@@ -62,6 +62,8 @@ class R5(nn.Module):
 
     def CL(self, feat, pred, centers):
         loss = 0
+        valid_centers = 0
+        
         for label, center in enumerate(centers):
             center = center.float()
             feat = feat.float()
@@ -74,12 +76,26 @@ class R5(nn.Module):
                     torch.matmul(feat, center.unsqueeze(0).T),
                     self.tau)
 
-                pos = torch.mean(torch.exp(pos.squeeze()))
-                neg = torch.mean(torch.exp(neg.squeeze()))
+                # Clamp values to prevent overflow in exp
+                pos = torch.clamp(pos.squeeze(), min=-10, max=10)
+                neg = torch.clamp(neg.squeeze(), min=-10, max=10)
+                
+                pos = torch.mean(torch.exp(pos))
+                neg = torch.mean(torch.exp(neg))
 
-                loss = loss - torch.log(pos / neg)
+                # Add small epsilon to prevent division by zero
+                eps = 1e-8
+                if pos > eps and neg > eps:
+                    loss_term = -torch.log(pos / (neg + eps))
+                    if not (torch.isnan(loss_term) or torch.isinf(loss_term)):
+                        loss = loss + loss_term
+                        valid_centers += 1
 
-        return loss / centers.shape[0]
+        # Return average loss or 0 if no valid centers
+        if valid_centers > 0:
+            return loss / valid_centers
+        else:
+            return torch.tensor(0.0, device=feat.device)
 
 
 class Arg:

@@ -44,7 +44,7 @@ def _robust_inverse(matrix, jitter_base=1e-6):
     
     # Second attempt: Eigenvalue decomposition with more aggressive regularization
     try:
-        print(f"   ⚠️ Using eigenvalue decomposition for matrix regularization")
+        print(f"   Using eigenvalue decomposition for matrix regularization")
         # Use eigendecomposition instead of SVD for symmetric matrices
         eigenvals, eigenvecs = torch.linalg.eigh(matrix)
         
@@ -64,7 +64,7 @@ def _robust_inverse(matrix, jitter_base=1e-6):
     
     # Third attempt: Direct pseudo-inverse with conditioning
     try:
-        print(f"   ⚠️ Using conditioned pseudo-inverse")
+        print(f"   Using conditioned pseudo-inverse")
         # Add substantial regularization directly to original matrix
         reg_matrix = _add_diagonal_jitter(matrix, 1.0)
         return torch.linalg.pinv(reg_matrix, atol=1e-3, rtol=1e-3)
@@ -74,7 +74,7 @@ def _robust_inverse(matrix, jitter_base=1e-6):
     
     # Fourth attempt: Create a well-conditioned approximation
     try:
-        print(f"   ⚠️ Creating well-conditioned approximation")
+        print(f"   Creating well-conditioned approximation")
         n = matrix.size(-1)
         # Create identity matrix as ultimate fallback
         identity = torch.eye(n, device=matrix.device, dtype=matrix.dtype)
@@ -84,7 +84,7 @@ def _robust_inverse(matrix, jitter_base=1e-6):
         
     except:
         # Absolute final fallback: pure identity
-        print(f"   ⚠️ Using identity matrix as final fallback")
+        print(f"   Using identity matrix as final fallback")
         n = matrix.size(-1)
         return torch.eye(n, device=matrix.device, dtype=matrix.dtype)
 

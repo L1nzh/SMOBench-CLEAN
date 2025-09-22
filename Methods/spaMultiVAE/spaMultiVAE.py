@@ -732,6 +732,15 @@ class SPAMULTIVAE(nn.Module):
 
         self.train()
 
+        # Debug tensor shapes
+        print(f"   🔍 Debug tensor shapes:")
+        print(f"      pos: {pos.shape}")
+        print(f"      gene_ncounts: {gene_ncounts.shape}")
+        print(f"      gene_raw_counts: {gene_raw_counts.shape}")
+        print(f"      gene_size_factors: {gene_size_factors.shape}")
+        print(f"      protein_ncounts: {protein_ncounts.shape}")
+        print(f"      protein_raw_counts: {protein_raw_counts.shape}")
+
         dataset = TensorDataset(torch.tensor(pos, dtype=self.dtype), torch.tensor(gene_ncounts, dtype=self.dtype), 
                         torch.tensor(gene_raw_counts, dtype=self.dtype), torch.tensor(gene_size_factors, dtype=self.dtype),
                         torch.tensor(protein_ncounts, dtype=self.dtype), torch.tensor(protein_raw_counts, dtype=self.dtype))

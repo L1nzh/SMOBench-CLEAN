@@ -19,9 +19,34 @@ class DenseEncoder(nn.Module):
         self.enc_var = nn.Linear(hidden_dims[-1], output_dim)
 
     def forward(self, x):
+        # Check for NaN/inf in input
+        if torch.any(torch.isnan(x)) or torch.any(torch.isinf(x)):
+            print("      NaN/Inf detected in encoder input, replacing with zeros")
+            x = torch.where(torch.isnan(x) | torch.isinf(x), torch.zeros_like(x), x)
+        
         h = self.layers(x)
+        
+        # Check for NaN/inf in hidden layer
+        if torch.any(torch.isnan(h)) or torch.any(torch.isinf(h)):
+            print("      NaN/Inf detected in encoder hidden layer, replacing with zeros")
+            h = torch.where(torch.isnan(h) | torch.isinf(h), torch.zeros_like(h), h)
+        
         mu = self.enc_mu(h)
-        var = torch.exp(self.enc_var(h).clamp(-15, 15))
+        var_logits = self.enc_var(h).clamp(-15, 15)
+        var = torch.exp(var_logits)
+        
+        # Ensure outputs are valid
+        if torch.any(torch.isnan(mu)) or torch.any(torch.isinf(mu)):
+            print("      NaN/Inf detected in encoder mu, replacing with zeros")
+            mu = torch.where(torch.isnan(mu) | torch.isinf(mu), torch.zeros_like(mu), mu)
+        
+        if torch.any(torch.isnan(var)) or torch.any(torch.isinf(var)):
+            print("      NaN/Inf detected in encoder var, replacing with ones")
+            var = torch.where(torch.isnan(var) | torch.isinf(var), torch.ones_like(var), var)
+        
+        # Ensure variance is positive
+        var = torch.clamp(var, min=1e-8)
+        
         return mu, var
 
 

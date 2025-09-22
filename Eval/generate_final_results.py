@@ -1,366 +1,519 @@
+"""
+Generate Final Evaluation Results for SMOBench Vertical Integration
+Creates comprehensive summary tables and rankings for all methods and datasets
+"""
+
 import pandas as pd
 import numpy as np
 import os
 import glob
+from pathlib import Path
 
-# 定义指标到类别的映射关系（可配置，需要同时修改/src/demo中配置的指标）
-metric_to_category = {
-    'Moran Index': 'SC', 'Geary C': 'SC',
-    
-    'ARI': 'BioC', 'NMI': 'BioC', 'AMI': 'BioC', 'FMI': 'BioC', 
-    'Purity': 'BioC', 'Homogeneity': 'BioC', 'Completeness': 'BioC', 
-    'V-measure': 'BioC', 'Jaccard Index': 'BioC', 'Dice Index': 'BioC', 
-    'F-measure': 'BioC', 'Silhouette Coefficient': 'BioC', 
-    'Calinski-Harabaz Index': 'BioC', 'Davies-Bouldin Index': 'BioC', 
-    'asw_celltype': 'BioC', 'graph_clisi': 'BioC',
-    # 'Isolated Label F1': 'BioC', 'Isolated Silhouette': 'BioC',
-    
-    'Graph Connectivity': 'BER',
-    'asw_batch': 'BER', 'Graph iLISI': 'BER', 'kBET': 'BER'
+# Dataset classification for RNA_ADT vs RNA_ATAC categorization
+DATASET_TYPES = {
+    'HLN_A1': 'RNA_ADT',
+    'HLN_D1': 'RNA_ADT',
+    'HLN': 'RNA_ADT',  # Aggregated HLN
+    'HT_S1': 'RNA_ADT',
+    'HT_S2': 'RNA_ADT', 
+    'HT_S3': 'RNA_ADT',
+    'HT': 'RNA_ADT',   # Aggregated HT
+    'MISAR_S1': 'RNA_ATAC',
+    'MISAR_S2': 'RNA_ATAC',
+    'Mouse_Thymus': 'RNA_ADT',
+    'Mouse_Spleen': 'RNA_ADT', 
+    'Mouse_Brain': 'RNA_ATAC'
 }
 
-# 定义哪些指标是值越低越好（可配置）
-# asw_batch,kBET本来也是越小越好，但是SCALE了
-lower_is_better_metrics = ['Davies-Bouldin Index', 'Geary C']
+# Metrics categorization for score calculation
+SC_METRICS = ['Moran Index', 'Geary C']
 
+# BioC metrics vary by ground truth availability
+BIOC_METRICS_WITHGT = ['ARI', 'NMI', 'asw_celltype', 'graph_clisi']
+BIOC_METRICS_WOGT = ['Davies-Bouldin Index', 'Silhouette Coefficient', 'Calinski-Harabaz Index']
 
+# Metrics where lower values are better
+LOWER_IS_BETTER = ['Davies-Bouldin Index', 'Geary C']
 
-def process_metrics_from_directory_vertical(directory_path):
+def normalize_metric_value(value, metric_name, all_values_for_metric):
     """
-    对指定目录下的所有指标CSV文件执行完整的处理流程。
-    步骤  1: 读取和分类
-    步骤 2: 标准化
-    步骤 3: 按类别求平均（批次级）
-    步骤 4: 合并不同批次，求组织级平均
-    """
+    Normalize a metric value to 0-1 scale
+    ONLY NORMALIZES DBI (Davies-Bouldin Index) and CHI (Calinski-Harabasz Index)
+    Other metrics return original values
     
-    # --- 步骤 1: 读取文件并进行分类 ---
-    print("\n--- 步骤 1: 读取与分类 ---")
-    
-    # 查找所有匹配的CSV文件
-    file_paths_with_gt = glob.glob(os.path.join(directory_path, "*_cluster_metrics_with_GT.csv"))
-    file_paths_wo_gt = glob.glob(os.path.join(directory_path, "*_cluster_metrics_wo_GT.csv"))
-    file_paths = file_paths_with_gt + file_paths_wo_gt
-    
-    if not file_paths:
-        print(f"错误: 在目录 '{directory_path}' 中未找到任何匹配的CSV文件。")
-        return None
-
-    # 读取所有文件到一个DataFrame列表中
-    all_data = []
-    for path in file_paths:
-        filename = os.path.basename(path)
-        parts = filename.split('_')
-        method, tissue, batch = parts[0], parts[1], parts[2]
+    Parameters:
+    -----------
+    value : float
+        The metric value to normalize
+    metric_name : str
+        Name of the metric (for direction determination)
+    all_values_for_metric : list
+        All values for this metric across methods/datasets
         
-        df_temp = pd.read_csv(path, header=None, names=['Metric', 'Raw_Value'])
-        df_temp['Method'] = method
-        df_temp['Tissue'] = tissue
-        df_temp['Batch'] = batch
-        all_data.append(df_temp)
-        
-    # 将所有数据合并成一个大的DataFrame
-    df_master = pd.concat(all_data, ignore_index=True)
-    
-    # 添加'Category'列
-    df_master['Category'] = df_master['Metric'].map(metric_to_category)
-    
-    # 检查是否有未分类的指标
-    unclassified = df_master[df_master['Category'].isna()]
-    if not unclassified.empty:
-        print("\n警告: 以下指标未找到分类，将被忽略:")
-        print(unclassified['Metric'].unique())
-        df_master.dropna(subset=['Category'], inplace=True) # 移除未分类的行
-        
-    print("数据读取和分类完成。数据预览:")
-    print(df_master.head())
-
-    # --- 步骤 2: 对每个数据做标准化 ---
-    print("\n--- 步骤 2: 标准化 ---")
-    
-    def normalize_values(group):
-        # 检查指标的方向性
-        metric_name = group.name[2] # 获取分组的指标名称
-        is_lower_better = metric_name in lower_is_better_metrics
-        
-        min_val = group.min()
-        max_val = group.max()
-        
-        # 处理所有值都相同的情况，避免除以零
-        if max_val == min_val:
-            return pd.Series(0.5, index=group.index)
-            
-        if is_lower_better:
-            # 值越低，分数越高
-            normalized = (max_val - group) / (max_val - min_val)
-        else:
-            # 值越高，分数越高
-            normalized = (group - min_val) / (max_val - min_val)
-            
-        return normalized
-
-    # 按 组织-批次-指标 分组，然后对每个组应用标准化
-    df_master['Normalized_Value'] = df_master.groupby(
-        ['Tissue', 'Batch', 'Metric']
-    )['Raw_Value'].transform(normalize_values)
-    
-    print("数据标准化完成。数据预览 (包含标准化得分):")
-    # 显示一个指标在所有方法中的标准化结果作为示例
-    print(df_master[df_master['Metric'] == 'ARI'][['Method', 'Raw_Value', 'Normalized_Value']].sort_values('Raw_Value'))
-    print(df_master[df_master['Metric'] == 'Davies-Bouldin Index'][['Method', 'Raw_Value', 'Normalized_Value']].sort_values('Raw_Value'))
-
-    # --- 步骤 3: 同类取平均（批次级） ---
-    print("\n--- 步骤 3: 同类取平均（批次级） ---")
-
-    # 按 方法-组织-批次-类别 分组，计算标准化得分的平均值
-    batch_level_scores = df_master.groupby(
-        ['Method', 'Tissue', 'Batch', 'Category']
-    )['Normalized_Value'].mean()
-    
-    # 将结果从长格式转换为更易读的宽格式
-    batch_summary = batch_level_scores.unstack(level='Category').reset_index()
-    
-    # 重命名列以符合期望的输出
-    column_mapping = {'SC': 'SC_Score', 'BioC': 'BioC_Score', 'BER': 'BER_Score'}
-    # 只重命名存在的列
-    existing_columns = {k: v for k, v in column_mapping.items() if k in batch_summary.columns}
-    batch_summary.rename(columns=existing_columns, inplace=True)
-    
-    print("批次级结果（每个批次单独的得分）:")
-    print(batch_summary.to_string(index=False))
-
-    # --- 新增步骤 4: 合并不同批次，计算组织级平均 ---
-    print("\n--- 步骤 4: 合并批次，计算组织级综合得分 ---")
-    
-    # 确定实际存在的类别列
-    category_columns = [col for col in ['SC_Score', 'BioC_Score', 'BER_Score'] if col in batch_summary.columns]
-    
-    # 按 方法-组织 分组，对不同批次的得分取平均
-    tissue_level_scores = batch_summary.groupby(
-        ['Method', 'Tissue']
-    )[category_columns].mean().reset_index()
-    
-    # 保留两位小数（可选，增强可读性）
-    tissue_level_scores[category_columns] = tissue_level_scores[category_columns].round(2)
-    
-    print("组织级综合结果（合并不同批次后的平均得分）:")
-    return tissue_level_scores
-
-
-def process_metrics_from_directory_horizontal(directory_path):
-    """
-    处理horizontal任务的输出文件（以_BC.csv为后缀）
-    步骤 1: 读取和分类
-    步骤 2: 标准化（按方法-组织-指标）
-    步骤 3: 按类别求平均
+    Returns:
+    --------
+    float : Normalized value between 0 and 1 for DBI/CHI, original value for others
     """
     
-    # --- 步骤 1: 读取文件并进行分类 ---
-    print("\n--- 步骤 1: 读取与分类 (Horizontal) ---")
+    # Only normalize DBI and CHI, return original values for all other metrics
+    metrics_to_normalize = ['Davies-Bouldin Index', 'Calinski-Harabaz Index']
     
-    # 查找所有匹配的BC CSV文件
-    file_paths = glob.glob(os.path.join(directory_path, "*_BC.csv"))
+    if metric_name not in metrics_to_normalize:
+        return value  # Return original value without normalization
     
-    if not file_paths:
-        print(f"错误: 在目录 '{directory_path}' 中未找到任何BC匹配的CSV文件。")
-        return None
-
-    # 读取所有文件到一个DataFrame列表中
-    all_data = []
-    for path in file_paths:
-        filename = os.path.basename(path)
-        # 文件名格式如: SpatialGlue_HT_BC.csv
-        parts = filename.split('_')
-        method, tissue = parts[0], parts[1]
-        
-        df_temp = pd.read_csv(path, header=None, names=['Metric', 'Raw_Value'])
-        df_temp['Method'] = method
-        df_temp['Tissue'] = tissue
-        all_data.append(df_temp)
-        
-    # 将所有数据合并成一个大的DataFrame
-    df_master = pd.concat(all_data, ignore_index=True)
+    if len(all_values_for_metric) == 0 or np.isnan(value):
+        return 0.5
     
-    # 添加'Category'列
-    df_master['Category'] = df_master['Metric'].map(metric_to_category)
+    min_val = min(all_values_for_metric)
+    max_val = max(all_values_for_metric)
     
-    # 检查是否有未分类的指标
-    unclassified = df_master[df_master['Category'].isna()]
-    if not unclassified.empty:
-        print("\n警告: 以下指标未找到分类，将被忽略:")
-        print(unclassified['Metric'].unique())
-        df_master.dropna(subset=['Category'], inplace=True) # 移除未分类的行
-        
-    print("数据读取和分类完成。数据预览:")
-    print(df_master.head())
-
-    # --- 步骤 2: 对每个数据做标准化 ---
-    print("\n--- 步骤 2: 标准化 (Horizontal) ---")
+    # Handle case where all values are the same
+    if max_val == min_val:
+        return 0.5
     
-    def normalize_values(group):
-        # 检查指标的方向性
-        metric_name = group.name[1] # 获取分组的指标名称
-        is_lower_better = metric_name in lower_is_better_metrics
-        
-        min_val = group.min()
-        max_val = group.max()
-        
-        # 处理所有值都相同的情况，避免除以零
-        if max_val == min_val:
-            return pd.Series(0.5, index=group.index)
-            
-        if is_lower_better:
-            # 值越低，分数越高
-            normalized = (max_val - group) / (max_val - min_val)
-        else:
-            # 值越高，分数越高
-            normalized = (group - min_val) / (max_val - min_val)
-            
-        return normalized
-
-    # 按 组织-指标 分组，然后对每个组应用标准化
-    df_master['Normalized_Value'] = df_master.groupby(
-        ['Tissue', 'Metric']
-    )['Raw_Value'].transform(normalize_values)
-    
-    print("数据标准化完成。数据预览ARI DBI (包含标准化得分):")
-    # 显示一个指标在所有方法中的标准化结果作为示例
-    print(df_master[df_master['Metric'] == 'Graph Connectivity'][['Method', 'Raw_Value', 'Normalized_Value']].sort_values('Raw_Value'))
-
-    # --- 步骤 3: 同类取平均 ---
-    print("\n--- 步骤 3: 同类取平均 (Horizontal) ---")
-
-    # 按 方法-组织-类别 分组，计算标准化得分的平均值
-    tissue_level_scores = df_master.groupby(
-        ['Method', 'Tissue', 'Category']
-    )['Normalized_Value'].mean()
-    
-    # 将结果从长格式转换为更易读的宽格式
-    final_summary = tissue_level_scores.unstack(level='Category').reset_index()
-    
-    # 重命名列以符合期望的输出
-    column_mapping = {'SC': 'SC_Score', 'BioC': 'BioC_Score', 'BER': 'BER_Score'}
-    # 只重命名存在的列
-    existing_columns = {k: v for k, v in column_mapping.items() if k in final_summary.columns}
-    final_summary.rename(columns=existing_columns, inplace=True)
-    
-    # 确定实际存在的类别列
-    category_columns = [col for col in ['SC_Score', 'BioC_Score', 'BER_Score'] if col in final_summary.columns]
-    
-    # 保留两位小数（可选，增强可读性）
-    final_summary[category_columns] = final_summary[category_columns].round(2)
-    
-    print("Horizontal任务综合结果:")
-    return final_summary
-
-def generate_final_SMOBench(results_dir):
-    """
-    读取final_vertical.csv和final_horizontal.csv，将同一方法同一组织的得分取平均，
-    生成最终的SMOBench综合评估结果
-    """
-    print("\n" + "="*60)
-    print("生成 SMOBench 综合评估结果")
-    print("="*60)
-    
-    # 读取vertical和horizontal结果
-    vertical_path = os.path.join(results_dir, 'final_vertical.csv')
-    horizontal_path = os.path.join(results_dir, 'final_horizontal.csv')
-    
-    dataframes = []
-    
-    # 读取vertical结果
-    if os.path.exists(vertical_path):
-        df_vertical = pd.read_csv(vertical_path)
-        dataframes.append(df_vertical)
-        print(f"已加载 Vertical 结果: {vertical_path}")
+    if metric_name in LOWER_IS_BETTER:
+        # For metrics where lower is better, invert the normalization
+        normalized = (max_val - value) / (max_val - min_val)
     else:
-        print(f"警告: 未找到 Vertical 结果文件 {vertical_path}")
+        # For metrics where higher is better
+        normalized = (value - min_val) / (max_val - min_val)
     
-    # 读取horizontal结果
-    if os.path.exists(horizontal_path):
-        df_horizontal = pd.read_csv(horizontal_path)
-        dataframes.append(df_horizontal)
-        print(f"已加载 Horizontal 结果: {horizontal_path}")
-    else:
-        print(f"警告: 未找到 Horizontal 结果文件 {horizontal_path}")
-    
-    # 如果没有数据文件，返回None
-    if not dataframes:
-        print("错误: 没有找到任何输入文件")
-        return None
-    
-    # 合并所有数据
-    df_combined = pd.concat(dataframes, ignore_index=True)
-    
-    # 确定实际存在的类别列
-    category_columns = [col for col in ['SC_Score', 'BioC_Score', 'BER_Score'] if col in df_combined.columns]
-    
-    # 按 方法-组织 分组，计算每个类别得分的平均值
-    grouped = df_combined.groupby(['Method', 'Tissue'])[category_columns].mean().reset_index()
-    
-    # 计算SMOBench综合得分（各维度得分的平均值）
-    if len(category_columns) > 0:
-        grouped['SMOBench'] = grouped[category_columns].mean(axis=1).round(2)
-    
-    print("\nSMOBench综合评估结果:")
-    return grouped
+    return max(0.0, min(1.0, normalized))
 
+def process_individual_results(results_dir):
+    """
+    Process individual slice results and aggregate by dataset
+    
+    Parameters:
+    -----------
+    results_dir : str
+        Path to the evaluation results directory
+        
+    Returns:
+    --------
+    dict : Aggregated results by clustering method
+    """
+    
+    print("Processing individual evaluation results...")
+    
+    # Find all individual result files
+    withgt_files = glob.glob(os.path.join(results_dir, "**/*_withGT.csv"), recursive=True)
+    wogt_files = glob.glob(os.path.join(results_dir, "**/*_woGT.csv"), recursive=True)
+    
+    all_files = withgt_files + wogt_files
+    
+    if not all_files:
+        print(f"No evaluation result files found in {results_dir}")
+        return {}
+    
+    print(f"Found {len(all_files)} evaluation result files")
+    
+    # Group results by clustering method
+    results_by_clustering = {
+        'leiden': [],
+        'louvain': [],
+        'kmeans': [],
+        'mclust': []
+    }
+    
+    # Process each file
+    for file_path in all_files:
+        try:
+            # Parse filename to extract metadata
+            filename = os.path.basename(file_path)
+            parts = filename.replace('.csv', '').split('_')
+            
+            if len(parts) < 5:
+                print(f"Warning: Cannot parse filename {filename}")
+                continue
+            
+            method_name = parts[0]
+            
+            # Handle dataset names like MISAR_S1, MISAR_S2, HLN_A1, HT_S1, etc.
+            if parts[1] in ['MISAR', 'HLN', 'HT'] and len(parts) >= 6:
+                dataset_name = f"{parts[1]}_{parts[2]}"  # MISAR_S1, HLN_A1, HT_S1, etc.
+                slice_name = parts[3]
+                clustering_method = parts[4]
+                gt_status = parts[5]
+            elif parts[1] in ['Mouse'] and len(parts) >= 6:
+                dataset_name = f"{parts[1]}_{parts[2]}"  # Mouse_Brain, Mouse_Spleen, Mouse_Thymus
+                slice_name = parts[3]
+                clustering_method = parts[4]
+                gt_status = parts[5]
+            else:
+                # Standard format: METHOD_DATASET_SLICE_CLUSTERING_GT
+                dataset_name = parts[1]
+                slice_name = parts[2] 
+                clustering_method = parts[3]
+                gt_status = parts[4]  # 'withGT' or 'woGT'
+            
+            # Read the evaluation results
+            df = pd.read_csv(file_path)
+            
+            # Convert to dictionary
+            metrics_dict = dict(zip(df['Metric'], df['Value']))
+            
+            # Add metadata
+            metrics_dict.update({
+                'Method': method_name,
+                'Dataset': dataset_name,
+                'Slice': slice_name,
+                'Clustering': clustering_method,
+                'GT_Available': (gt_status == 'withGT'),
+                'Dataset_Type': DATASET_TYPES.get(dataset_name, 'Unknown')
+            })
+            
+            # Add to appropriate clustering group
+            if clustering_method in results_by_clustering:
+                results_by_clustering[clustering_method].append(metrics_dict)
+        
+        except Exception as e:
+            print(f"Error processing {file_path}: {e}")
+            continue
+    
+    return results_by_clustering
 
-# --- 执行代码 ---
+def aggregate_by_dataset(results_list):
+    """
+    Aggregate slice-level results to dataset level
+    
+    Parameters:
+    -----------
+    results_list : list
+        List of dictionaries containing slice-level results
+        
+    Returns:
+    --------
+    pd.DataFrame : Dataset-level aggregated results
+    """
+    
+    if not results_list:
+        return pd.DataFrame()
+    
+    # Group by method and dataset
+    grouped_data = {}
+    
+    for result in results_list:
+        key = (result['Method'], result['Dataset'])
+        if key not in grouped_data:
+            grouped_data[key] = []
+        grouped_data[key].append(result)
+    
+    # Aggregate each group
+    aggregated_results = []
+    
+    for (method, dataset), slice_results in grouped_data.items():
+        if not slice_results:
+            continue
+        
+        # Determine metrics to aggregate based on GT availability
+        has_gt = slice_results[0]['GT_Available']
+        dataset_type = DATASET_TYPES.get(dataset, 'Unknown')  # Look up aggregated dataset type
+        clustering = slice_results[0]['Clustering']
+        
+        # Calculate averages for each metric
+        aggregated = {
+            'Method': method,
+            'Dataset': dataset,
+            'Dataset_Type': dataset_type,
+            'Clustering': clustering,
+            'GT_Available': has_gt,
+            'Num_Slices': len(slice_results)
+        }
+        
+        # Aggregate SC metrics
+        for metric in SC_METRICS:
+            values = [r.get(metric, np.nan) for r in slice_results if metric in r]
+            if values and not all(np.isnan(values)):
+                aggregated[metric] = np.nanmean(values)
+            else:
+                aggregated[metric] = np.nan
+        
+        # Aggregate BioC metrics based on GT availability
+        if has_gt:
+            bioc_metrics = BIOC_METRICS_WITHGT
+        else:
+            bioc_metrics = BIOC_METRICS_WOGT
+        
+        for metric in bioc_metrics:
+            values = [r.get(metric, np.nan) for r in slice_results if metric in r]
+            if values and not all(np.isnan(values)):
+                aggregated[metric] = np.nanmean(values)
+            else:
+                aggregated[metric] = np.nan
+        
+        aggregated_results.append(aggregated)
+    
+    return pd.DataFrame(aggregated_results)
+
+def calculate_normalized_scores(df):
+    """
+    Calculate normalized SC, BioC, and Total scores
+    
+    Parameters:
+    -----------
+    df : pd.DataFrame
+        DataFrame with aggregated dataset results
+        
+    Returns:
+    --------
+    pd.DataFrame : DataFrame with added normalized scores
+    """
+    
+    if df.empty:
+        return df
+    
+    df = df.copy()
+    
+    # Separate withGT and woGT datasets for normalization
+    withgt_mask = df['GT_Available'] == True
+    wogt_mask = df['GT_Available'] == False
+    
+    # Calculate scores for each group separately
+    for mask, suffix in [(withgt_mask, 'withGT'), (wogt_mask, 'woGT')]:
+        if not mask.any():
+            continue
+        
+        subset_df = df[mask]
+        
+        # Determine metrics for this group
+        if suffix == 'withGT':
+            bioc_metrics = BIOC_METRICS_WITHGT
+        else:
+            bioc_metrics = BIOC_METRICS_WOGT
+        
+        # Process SC metrics (keep original values, no normalization for scoring)
+        sc_scores = []
+        for metric in SC_METRICS:
+            if metric in subset_df.columns:
+                all_values = subset_df[metric].dropna().tolist()
+                if all_values:
+                    # Apply normalization (but only DBI/CHI will actually be normalized)
+                    normalized_values = [normalize_metric_value(val, metric, all_values) 
+                                       for val in subset_df[metric]]
+                    df.loc[mask, f'{metric}_normalized'] = normalized_values
+                    # For SC metrics, use original values for scoring since they're not DBI/CHI
+                    sc_scores.append(metric)
+        
+        # Calculate SC score using original metric values
+        if sc_scores:
+            df.loc[mask, 'SC_Score'] = df.loc[mask, sc_scores].mean(axis=1)
+        
+        # Process BioC metrics
+        bioc_scores = []
+        bioc_normalized_scores = []
+        for metric in bioc_metrics:
+            if metric in subset_df.columns:
+                all_values = subset_df[metric].dropna().tolist()
+                if all_values:
+                    # Apply normalization (only DBI/CHI will actually be normalized)
+                    normalized_values = [normalize_metric_value(val, metric, all_values) 
+                                       for val in subset_df[metric]]
+                    df.loc[mask, f'{metric}_normalized'] = normalized_values
+                    
+                    # For DBI and CHI, use normalized values; for others use original
+                    if metric in ['Davies-Bouldin Index', 'Calinski-Harabaz Index']:
+                        bioc_normalized_scores.append(f'{metric}_normalized')
+                    else:
+                        bioc_scores.append(metric)
+        
+        # Calculate BioC score using mix of normalized (DBI/CHI) and original values
+        all_bioc_scores = bioc_scores + bioc_normalized_scores
+        if all_bioc_scores:
+            df.loc[mask, 'BioC_Score'] = df.loc[mask, all_bioc_scores].mean(axis=1)
+        
+        # Calculate Total score
+        if 'SC_Score' in df.columns and 'BioC_Score' in df.columns:
+            df.loc[mask, 'Total_Score'] = (df.loc[mask, 'SC_Score'] + df.loc[mask, 'BioC_Score']) / 2
+    
+    return df
+
+def create_summary_tables(df, clustering_method):
+    """
+    Create summary tables for a specific clustering method
+    
+    Parameters:
+    -----------
+    df : pd.DataFrame
+        DataFrame with normalized scores
+    clustering_method : str
+        Name of the clustering method
+        
+    Returns:
+    --------
+    tuple : (rna_adt_table, rna_atac_table, comprehensive_table) summary tables
+    """
+    
+    # Filter for this clustering method
+    method_df = df[df['Clustering'] == clustering_method].copy()
+    
+    if method_df.empty:
+        return pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
+    
+    # Create pivot tables for RNA_ADT and RNA_ATAC
+    rna_adt_df = method_df[method_df['Dataset_Type'] == 'RNA_ADT']
+    rna_atac_df = method_df[method_df['Dataset_Type'] == 'RNA_ATAC']
+    
+    # Create summary tables
+    def create_pivot_table(data_df, data_type):
+        if data_df.empty:
+            return pd.DataFrame()
+        
+        # Create pivot table with methods as rows and datasets as columns
+        pivot_df = data_df.pivot_table(
+            index='Method',
+            columns='Dataset', 
+            values='Total_Score',
+            aggfunc='mean'
+        ).round(3)
+        
+        # Add overall average
+        pivot_df['Average'] = pivot_df.mean(axis=1).round(3)
+        
+        # Sort by average score
+        pivot_df = pivot_df.sort_values('Average', ascending=False)
+        
+        return pivot_df
+    
+    rna_adt_table = create_pivot_table(rna_adt_df, 'RNA_ADT')
+    rna_atac_table = create_pivot_table(rna_atac_df, 'RNA_ATAC')
+    
+    # Create comprehensive table with all 7 datasets
+    comprehensive_table = create_pivot_table(method_df, 'All')
+    
+    return rna_adt_table, rna_atac_table, comprehensive_table
+
+def save_results(results_dict, output_dir):
+    """
+    Save all results to files
+    
+    Parameters:
+    -----------
+    results_dict : dict
+        Dictionary containing all results organized by clustering method
+    output_dir : str
+        Output directory for saving results
+    """
+    
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # Save detailed results for each clustering method
+    for clustering_method, data in results_dict.items():
+        if 'detailed_results' in data:
+            detailed_path = os.path.join(output_dir, f"detailed_results_{clustering_method}.csv")
+            data['detailed_results'].to_csv(detailed_path, index=False)
+            print(f"Saved detailed results: {detailed_path}")
+        
+        if 'rna_adt_summary' in data and not data['rna_adt_summary'].empty:
+            rna_adt_path = os.path.join(output_dir, f"summary_RNA_ADT_{clustering_method}.csv")
+            data['rna_adt_summary'].to_csv(rna_adt_path)
+            print(f"Saved RNA_ADT summary: {rna_adt_path}")
+        
+        if 'rna_atac_summary' in data and not data['rna_atac_summary'].empty:
+            rna_atac_path = os.path.join(output_dir, f"summary_RNA_ATAC_{clustering_method}.csv")
+            data['rna_atac_summary'].to_csv(rna_atac_path)
+            print(f"Saved RNA_ATAC summary: {rna_atac_path}")
+        
+        if 'comprehensive_summary' in data and not data['comprehensive_summary'].empty:
+            comprehensive_path = os.path.join(output_dir, f"summary_{clustering_method}.csv")
+            data['comprehensive_summary'].to_csv(comprehensive_path)
+            print(f"Saved comprehensive summary: {comprehensive_path}")
+
+def generate_comprehensive_evaluation():
+    """
+    Generate comprehensive evaluation results for vertical integration
+    """
+    
+    print("="*80)
+    print("SMOBench Vertical Integration - Final Results Generation")
+    print("="*80)
+    
+    # Setup directories
+    results_dir = "/home/zhenghong/SMOBench-CLEAN/Results/evaluation/vertical_integration"
+    output_dir = "/home/zhenghong/SMOBench-CLEAN/Results/evaluation/vertical_integration/final_results"
+    
+    if not os.path.exists(results_dir):
+        print(f"Error: Results directory not found: {results_dir}")
+        print("Please run eval_adata.py first to generate evaluation results.")
+        return
+    
+    # Process individual results
+    results_by_clustering = process_individual_results(results_dir)
+    
+    if not any(results_by_clustering.values()):
+        print("Error: No evaluation results found.")
+        return
+    
+    # Process each clustering method
+    final_results = {}
+    
+    for clustering_method in ['leiden', 'louvain', 'kmeans', 'mclust']:
+        if clustering_method not in results_by_clustering or not results_by_clustering[clustering_method]:
+            print(f"Warning: No results found for {clustering_method}")
+            continue
+        
+        print(f"\n--- Processing {clustering_method} results ---")
+        
+        # Aggregate by dataset
+        aggregated_df = aggregate_by_dataset(results_by_clustering[clustering_method])
+        
+        if aggregated_df.empty:
+            print(f"Warning: No aggregated results for {clustering_method}")
+            continue
+        
+        # Calculate normalized scores
+        scored_df = calculate_normalized_scores(aggregated_df)
+        
+        # Create summary tables
+        rna_adt_table, rna_atac_table, comprehensive_table = create_summary_tables(scored_df, clustering_method)
+        
+        # Store results
+        final_results[clustering_method] = {
+            'detailed_results': scored_df,
+            'rna_adt_summary': rna_adt_table,
+            'rna_atac_summary': rna_atac_table,
+            'comprehensive_summary': comprehensive_table
+        }
+        
+        print(f"  Processed {len(scored_df)} dataset-level results")
+        if not rna_adt_table.empty:
+            print(f"  RNA_ADT summary: {rna_adt_table.shape[0]} methods × {rna_adt_table.shape[1]-1} datasets")
+        if not rna_atac_table.empty:
+            print(f"  RNA_ATAC summary: {rna_atac_table.shape[0]} methods × {rna_atac_table.shape[1]-1} datasets")
+        if not comprehensive_table.empty:
+            print(f"  Comprehensive summary: {comprehensive_table.shape[0]} methods × {comprehensive_table.shape[1]-1} datasets")
+    
+    # Save all results
+    save_results(final_results, output_dir)
+    
+    # Display summary tables
+    print("\n" + "="*80)
+    print("FINAL SUMMARY TABLES")
+    print("="*80)
+    
+    for clustering_method in ['leiden', 'louvain', 'kmeans', 'mclust']:
+        if clustering_method not in final_results:
+            continue
+        
+        print(f"\n{clustering_method.upper()} CLUSTERING RESULTS:")
+        print("-" * 50)
+        
+        if not final_results[clustering_method]['comprehensive_summary'].empty:
+            print(f"\nComprehensive Summary (All 7 Datasets):")
+            print(final_results[clustering_method]['comprehensive_summary'].to_string())
+        
+        if not final_results[clustering_method]['rna_adt_summary'].empty:
+            print(f"\nRNA + ADT Integration:")
+            print(final_results[clustering_method]['rna_adt_summary'].to_string())
+        
+        if not final_results[clustering_method]['rna_atac_summary'].empty:
+            print(f"\nRNA + ATAC Integration:")
+            print(final_results[clustering_method]['rna_atac_summary'].to_string())
+    
+    print(f"\n" + "="*80)
+    print("Results Generation Complete!")
+    print(f"All results saved to: {output_dir}")
+    print("="*80)
+
 if __name__ == "__main__":
-    data_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'results/test')
-    
-    # 创建results目录用于保存结果
-    results_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'results')
-    os.makedirs(results_dir, exist_ok=True)
-    
-    # 运行vertical处理流程
-    print("="*60)
-    print("处理 Vertical 任务结果")
-    print("="*60)
-    vertical_summary = process_metrics_from_directory_vertical(data_directory)
-    
-    # 保存vertical结果
-    if vertical_summary is not None:
-        vertical_output_path = os.path.join(results_dir, 'final_vertical.csv')
-        vertical_summary.to_csv(vertical_output_path, index=False)
-        print(f"\nVertical结果已保存至: {vertical_output_path}")
-        
-        print("\n" + "="*50)
-        print("          Vertical任务组织级综合性能评估得分")
-        print("="*50)
-        print(vertical_summary.to_string(index=False))
-        print("="*50)
-    
-    # 运行horizontal处理流程
-    print("\n" + "="*60)
-    print("处理 Horizontal 任务结果")
-    print("="*60)
-    horizontal_summary = process_metrics_from_directory_horizontal(data_directory)
-    
-    # 保存horizontal结果
-    if horizontal_summary is not None:
-        horizontal_output_path = os.path.join(results_dir, 'final_horizontal.csv')
-        horizontal_summary.to_csv(horizontal_output_path, index=False)
-        print(f"\nHorizontal结果已保存至: {horizontal_output_path}")
-        
-        print("\n" + "="*50)
-        print("          Horizontal任务组织级综合性能评估得分")
-        print("="*50)
-        print(horizontal_summary.to_string(index=False))
-        print("="*50)
-    
-    # 生成最终的SMOBench综合评估结果
-    final_SMOBench_result = generate_final_SMOBench(results_dir)
-    
-    # 保存并显示最终结果
-    if final_SMOBench_result is not None:
-        final_SMOBench_path = os.path.join(results_dir, 'final_SMOBench.csv')
-        final_SMOBench_result.to_csv(final_SMOBench_path, index=False)
-        print(f"\nSMOBench综合结果已保存至: {final_SMOBench_path}")
-        
-        print("\n" + "="*50)
-        print("          SMOBench综合性能评估得分")
-        print("="*50)
-        print(final_SMOBench_result.to_string(index=False))
-        print("="*50)
+    generate_comprehensive_evaluation()

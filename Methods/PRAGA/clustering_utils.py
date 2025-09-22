@@ -275,6 +275,16 @@ def split_and_merge_op(u_feat, args, index=0, stage=0):
     }
 
     u_feat = u_feat.cpu().detach().numpy()
+    
+    # Check and handle NaN values
+    if np.isnan(u_feat).any():
+        print(f"Warning: Found NaN values in u_feat, replacing with 0")
+        u_feat = np.nan_to_num(u_feat, nan=0.0, posinf=0.0, neginf=0.0)
+    
+    # Check for infinite values
+    if np.isinf(u_feat).any():
+        print(f"Warning: Found infinite values in u_feat, replacing with 0")
+        u_feat = np.nan_to_num(u_feat, nan=0.0, posinf=0.0, neginf=0.0)
 
     gmm = GaussianMixture(n_components=class_num, random_state=0)
     gmm.fit(u_feat)

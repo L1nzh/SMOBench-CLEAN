@@ -18,21 +18,25 @@ Leiden, Louvain, K-means, Mclust
 
 ## Project Structure
 
-- **Dataset/**: Multi-modal spatial omics datasets (withGT/woGT)
+- **Dataset/**: Multi-modal spatial omics datasets (withGT/woGT) - *Download from Google Drive*
 - **Methods/**: Integration method implementations
 - **Scripts/**: Execution workflows for integration and evaluation
 - **Eval/**: Evaluation framework and metrics calculation
-- **Results/**: Integration outputs and evaluation results
+- **Results/**: Integration outputs and evaluation results - *Download from Google Drive*
 - **Utils/**: Shared utilities and clustering interface
 
 ## Quick Start
 
-1. **Integration**: Run methods using scripts in `Scripts/`
-2. **Evaluation**: Use evaluation scripts in `Eval/`
-3. **Results**: Find processed outputs in `Results/`
+1. **Download Data**: Get datasets and results from Google Drive link below
+2. **Integration**: Run methods using scripts in `Scripts/`
+3. **Evaluation**: Use evaluation scripts in `Eval/`
 
 ## Data Access
 
-- **Datasets**: https://drive.google.com/drive/u/1/folders/11zYh27BK9QuqU7zObApCYSzSEMqHS0G6
-- **Integration Results**: Available in AnnData format at the same link
+**Note**: Due to large file sizes, datasets and integration results are not included in this repository.
+
+- **Complete Data Package**: https://drive.google.com/drive/u/1/folders/11zYh27BK9QuqU7zObApCYSzSEMqHS0G6
+  - Multi-modal spatial omics datasets (Dataset folder)
+  - Integration results in AnnData format (Results folder)
+  - All processed evaluation outputs
 

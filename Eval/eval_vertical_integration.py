@@ -30,7 +30,12 @@ WITHGT_DATASETS = ['HLN', 'HT', 'MISAR_S1', 'MISAR_S2']  # ME_S1, ME_S2 renamed 
 WOGT_DATASETS = ['Mouse_Thymus', 'Mouse_Spleen', 'Mouse_Brain']
 
 # Integration methods
-METHODS = ['CANDIES', 'COSMOS', 'PRAGA', 'PRESENT', 'SpaMV', 'SpaMosaic', 'SpatialGlue']
+METHODS = ['CANDIES', 'COSMOS', 'PRAGA', 'PRESENT', 'SpaMV', 'SpaMosaic', 'SpatialGlue', 'SpaMultiVAE']
+
+# Method-dataset compatibility (SpaMultiVAE only supports RNA_ADT datasets)
+METHOD_DATASET_COMPATIBILITY = {
+    'SpaMultiVAE': ['HLN', 'HT', 'Mouse_Thymus', 'Mouse_Spleen']  # Only RNA_ADT datasets (withGT + woGT)
+}
 
 # Clustering methods
 CLUSTERING_METHODS = ['leiden', 'louvain', 'kmeans', 'mclust']
@@ -254,6 +259,12 @@ def evaluate_all_vertical_integration(test_mode=False):
             dataset_path = os.path.join(method_dir, dataset_name)
             if not os.path.isdir(dataset_path):
                 continue
+            
+            # Check method-dataset compatibility
+            if method_name in METHOD_DATASET_COMPATIBILITY:
+                if dataset_name not in METHOD_DATASET_COMPATIBILITY[method_name]:
+                    print(f"  Skipping {dataset_name} (not supported by {method_name})")
+                    continue
             
             print(f"\n  Dataset: {dataset_name}")
             

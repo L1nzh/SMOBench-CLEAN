@@ -1,121 +1,44 @@
-# SMOBench Results
+# Results Directory
 
-This folder contains the outputs from SMOBench spatial multi-omics integration methods.
+Integration outputs and evaluation results from spatial multi-omics benchmarking.
 
-## Folder Structure
+## Directory Structure
 
-```
-Results/
-├── adata/                              # Processed AnnData results
-│   ├── SpatialGlue/                   # SpatialGlue integration results
-│   │   ├── HLN/                       # Human Lymph Nodes
-│   │   │   ├── A1/                    # Sample A1
-│   │   │   │   └── SpatialGlue_HLN_A1.h5ad
-│   │   │   └── D1/                    # Sample D1
-│   │   ├── HT/                        # Human Tonsils  
-│   │   │   ├── S1/, S2/, S3/          # Multiple samples
-│   │   ├── Mouse_Thymus/              # Mouse thymus samples
-│   │   ├── Mouse_Spleen/              # Mouse spleen samples
-│   │   ├── Mouse_Brain/               # Mouse brain samples
-│   │   └── MISAR_S1/, MISAR_S2/       # Mouse embryo samples
-│   ├── PRAGA/                         # PRAGA integration results
-│   │   └── [same structure as above]
-│   ├── COSMOS/                        # COSMOS integration results  
-│   │   └── [same structure as above]
-│   ├── PRESENT/                       # PRESENT integration results
-│   │   └── [same structure as above]
-│   ├── SpaMultiVAE/                   # SpaMultiVAE integration results
-│   │   └── [same structure as above]
-│   └── SpaMosaic/                     # SpaMosaic integration results
-│       └── [same structure as above]
-├── plot/                              # Visualization outputs
-│   ├── SpatialGlue/                   # SpatialGlue plots
-│   │   ├── Human_Lymph_Nodes/         
-│   │   │   ├── A1/
-│   │   │   │   ├── clustering_mclust_umap_spatial.png
-│   │   │   │   ├── clustering_leiden_umap_spatial.png
-│   │   │   │   ├── clustering_louvain_umap_spatial.png
-│   │   │   │   └── clustering_kmeans_umap_spatial.png
-│   │   │   └── D1/
-│   │   ├── Human_Tonsils/
-│   │   │   ├── S1/, S2/, S3/
-│   │   ├── Mouse_Thymus/
-│   │   ├── Mouse_Spleen/  
-│   │   ├── Mouse_Brain/
-│   │   └── Mouse_Embryos_S1/, Mouse_Embryos_S2/
-│   ├── PRAGA/                         # PRAGA plots
-│   │   └── [same structure as above]
-│   ├── COSMOS/                        # COSMOS plots
-│   │   └── [same structure as above]  
-│   ├── PRESENT/                       # PRESENT plots
-│   │   └── [same structure as above]
-│   ├── SpaMultiVAE/                   # SpaMultiVAE plots
-│   │   └── [same structure as above]
-│   └── SpaMosaic/                     # SpaMosaic plots
-│       └── [same structure as above]
-└── evaluation/                        # Evaluation metrics and reports
-    ├── clustering_results.csv         # Clustering performance metrics
-    ├── integration_metrics.csv        # Integration quality metrics
-    └── method_comparison.csv          # Cross-method comparison
-```
+### adata/
+**Vertical Integration Results:**
+- `vertical_integration/`: AnnData files with integration embeddings
+- Format: `{Method}_{Dataset}_{Sample}.h5ad`
+- Contains: Integration embeddings, clustering results, spatial coordinates
 
-## File Types
+**Horizontal Integration Results:**
+- `horizontal_integration/`: Cross-sample integration outputs  
+- Format: `{Method}_{Dataset}_horizontal.h5ad`
+- Contains: Batch-corrected embeddings, multi-sample clustering
 
-### AnnData Results (`*.h5ad`)
-- **Location**: `Results/adata/{Method}/{Dataset}/{Sample}/`
-- **Content**: Integrated spatial multi-omics data with embeddings
-- **Key Fields**:
-  - `adata.obsm['{Method}']`: Integration embeddings
-  - `adata.obs['{clustering_method}']`: Clustering labels
-  - `adata.obsm['spatial']`: Spatial coordinates
-  - `adata.obsm['X_umap']`: UMAP coordinates for visualization
+### evaluation/
+**Vertical Integration Evaluation:**
+- `vertical_integration/`: Individual method evaluation results
+- `vertical_integration/final_results/`: Aggregated summary tables
 
-### Visualization Plots (`*.png`)
-- **Location**: `Results/plot/{Method}/{Dataset}/{Sample}/`
-- **Types**:
-  - `clustering_{method}_umap_spatial.png`: UMAP + spatial plots
-  - Methods include: mclust, leiden, louvain, kmeans
-- **Format**: High-resolution (300 DPI) publication-ready figures
+**Horizontal Integration Evaluation:**  
+- `horizontal_integration/`: Individual method evaluation results
+- `horizontal_integration/final_results/`: Aggregated summary tables
 
-### Evaluation Metrics (`*.csv`)
-- **Location**: `Results/evaluation/`
-- **Content**: Quantitative performance metrics for method comparison
-- **Metrics**: ARI, NMI, Silhouette score, spatial coherence, etc.
+### plots/
+Visualization outputs including UMAP plots, spatial plots, and performance comparisons.
 
-## Data Formats
+## File Formats
 
-### Integration Results Structure
-Each `.h5ad` file contains:
-- **X**: Original or processed expression matrix
-- **obs**: Cell metadata with clustering results
-- **obsm**: Embeddings and coordinates
-  - `{Method}`: Method-specific integration embeddings
-  - `spatial`: Spatial coordinates
-  - `X_umap`: UMAP visualization coordinates
-- **var**: Feature metadata
+**Integration Results (AnnData):**
+- `adata.obsm[METHOD]`: Integration embeddings
+- `adata.obs[clustering]`: Clustering assignments
+- `adata.obsm['spatial']`: Spatial coordinates
 
-### Clustering Results
-For each clustering method (mclust, leiden, louvain, kmeans):
-- Stored in `adata.obs['{method}']` as categorical labels
-- Consistent cluster numbering across methods
-- Used for downstream evaluation and comparison
+**Evaluation Results (CSV):**
+- Individual metrics per method-dataset-clustering combination
+- Summary tables with overall performance scores
 
-## Generating Results
+## Data Access
 
-To regenerate these results, run the integration scripts:
-
-```bash
-# Run individual methods
-bash Scripts/integration/SpatialGlue/run.sh
-bash Scripts/integration/PRAGA/run.sh
-bash Scripts/integration/COSMOS/run.sh
-bash Scripts/integration/PRESENT/run.sh
-bash Scripts/integration/SpaMultiVAE/run.sh
-
-# Or use the task-based system
-python Scripts/run_tasks.py --config tasks_sample.csv
-```
-
-## Note
-
-Result files are excluded from the repository due to large file sizes. Users should generate their own results using the provided scripts and datasets.
+Complete results available in AnnData format at:
+https://drive.google.com/drive/u/1/folders/11zYh27BK9QuqU7zObApCYSzSEMqHS0G6

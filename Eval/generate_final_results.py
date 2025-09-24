@@ -286,36 +286,29 @@ def calculate_normalized_scores(df):
         sc_scores = []
         for metric in SC_METRICS:
             if metric in subset_df.columns:
-                all_values = subset_df[metric].dropna().tolist()
-                if all_values:
-                    # Apply normalization (but only DBI/CHI will actually be normalized)
-                    normalized_values = [normalize_metric_value(val, metric, all_values) 
-                                       for val in subset_df[metric]]
-                    df.loc[mask, f'{metric}_normalized'] = normalized_values
-                    # For SC metrics, use original values for scoring since they're not DBI/CHI
-                    sc_scores.append(metric)
+                # SC metrics don't need normalization, use original values
+                sc_scores.append(metric)
         
-        # Calculate SC score using original metric values
-        if sc_scores:
-            df.loc[mask, 'SC_Score'] = df.loc[mask, sc_scores].mean(axis=1)
+        # Calculate SC score using only Moran Index
+        if 'Moran Index' in subset_df.columns:
+            df.loc[mask, 'SC_Score'] = df.loc[mask, 'Moran Index']
         
         # Process BioC metrics
         bioc_scores = []
         bioc_normalized_scores = []
         for metric in bioc_metrics:
             if metric in subset_df.columns:
-                all_values = subset_df[metric].dropna().tolist()
-                if all_values:
-                    # Apply normalization (only DBI/CHI will actually be normalized)
-                    normalized_values = [normalize_metric_value(val, metric, all_values) 
-                                       for val in subset_df[metric]]
-                    df.loc[mask, f'{metric}_normalized'] = normalized_values
-                    
-                    # For DBI and CHI, use normalized values; for others use original
-                    if metric in ['Davies-Bouldin Index', 'Calinski-Harabaz Index']:
+                # Only normalize DBI and CHI
+                if metric in ['Davies-Bouldin Index', 'Calinski-Harabaz Index']:
+                    all_values = subset_df[metric].dropna().tolist()
+                    if all_values:
+                        normalized_values = [normalize_metric_value(val, metric, all_values) 
+                                           for val in subset_df[metric]]
+                        df.loc[mask, f'{metric}_normalized'] = normalized_values
                         bioc_normalized_scores.append(f'{metric}_normalized')
-                    else:
-                        bioc_scores.append(metric)
+                else:
+                    # Other BioC metrics use original values
+                    bioc_scores.append(metric)
         
         # Calculate BioC score using mix of normalized (DBI/CHI) and original values
         all_bioc_scores = bioc_scores + bioc_normalized_scores

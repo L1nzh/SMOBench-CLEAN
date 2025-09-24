@@ -10,211 +10,211 @@ echo "Start time: $(date)"
 # Create base results directory
 mkdir -p Results/adata/PRAGA Results/plot/PRAGA
 
-# === withGT RNA+ADT Datasets ===
+=== withGT RNA+ADT Datasets ===
 
-# echo "Processing Human_Lymph_Nodes datasets..."
+echo "Processing Human_Lymph_Nodes datasets..."
 
-# # Human_Lymph_Nodes A1
-# echo "Processing Human_Lymph_Nodes A1..."
-# python Scripts/vertical_integration/PRAGA/run_praga.py \
-#   --data_type 10x \
-#   --RNA_path Dataset/withGT/RNA_ADT/Human_Lymph_Nodes/A1/adata_RNA.h5ad \
-#   --ADT_path Dataset/withGT/RNA_ADT/Human_Lymph_Nodes/A1/adata_ADT.h5ad \
-#   --save_path Results/adata/PRAGA/HLN/A1/PRAGA_HLN_A1.h5ad \
-#   --method PRAGA \
-#   --dataset Human_Lymph_Nodes/A1 \
-#   --cluster_nums 10
+# Human_Lymph_Nodes A1
+echo "Processing Human_Lymph_Nodes A1..."
+python Scripts/vertical_integration/PRAGA/run_praga.py \
+  --data_type 10x \
+  --RNA_path Dataset/withGT/RNA_ADT/Human_Lymph_Nodes/A1/adata_RNA.h5ad \
+  --ADT_path Dataset/withGT/RNA_ADT/Human_Lymph_Nodes/A1/adata_ADT.h5ad \
+  --save_path Results/adata/PRAGA/HLN/A1/PRAGA_HLN_A1.h5ad \
+  --method PRAGA \
+  --dataset Human_Lymph_Nodes/A1 \
+  --cluster_nums 10
 
-# # Human_Lymph_Nodes D1
-# echo "Processing Human_Lymph_Nodes D1..."
-# python Scripts/vertical_integration/PRAGA/run_praga.py \
-#   --data_type 10x \
-#   --RNA_path Dataset/withGT/RNA_ADT/Human_Lymph_Nodes/D1/adata_RNA.h5ad \
-#   --ADT_path Dataset/withGT/RNA_ADT/Human_Lymph_Nodes/D1/adata_ADT.h5ad \
-#   --save_path Results/adata/PRAGA/HLN/D1/PRAGA_HLN_D1.h5ad \
-#   --method PRAGA \
-#   --dataset Human_Lymph_Nodes/D1 \
-#   --cluster_nums 11
+# Human_Lymph_Nodes D1
+echo "Processing Human_Lymph_Nodes D1..."
+python Scripts/vertical_integration/PRAGA/run_praga.py \
+  --data_type 10x \
+  --RNA_path Dataset/withGT/RNA_ADT/Human_Lymph_Nodes/D1/adata_RNA.h5ad \
+  --ADT_path Dataset/withGT/RNA_ADT/Human_Lymph_Nodes/D1/adata_ADT.h5ad \
+  --save_path Results/adata/PRAGA/HLN/D1/PRAGA_HLN_D1.h5ad \
+  --method PRAGA \
+  --dataset Human_Lymph_Nodes/D1 \
+  --cluster_nums 11
 
-# echo "Processing Human_Tonsils datasets..."
+echo "Processing Human_Tonsils datasets..."
 
-# # Human_Tonsils S1
-# echo "Processing Human_Tonsils S1..."
-# python Scripts/vertical_integration/PRAGA/run_praga.py \
-#   --data_type 10x \
-#   --RNA_path Dataset/withGT/RNA_ADT/Human_Tonsils/S1/adata_RNA.h5ad \
-#   --ADT_path Dataset/withGT/RNA_ADT/Human_Tonsils/S1/adata_ADT.h5ad \
-#   --save_path Results/adata/PRAGA/HT/S1/PRAGA_HT_S1.h5ad \
-#   --method PRAGA \
-#   --dataset Human_Tonsils/S1 \
-#   --cluster_nums 4
+# Human_Tonsils S1
+echo "Processing Human_Tonsils S1..."
+python Scripts/vertical_integration/PRAGA/run_praga.py \
+  --data_type 10x \
+  --RNA_path Dataset/withGT/RNA_ADT/Human_Tonsils/S1/adata_RNA.h5ad \
+  --ADT_path Dataset/withGT/RNA_ADT/Human_Tonsils/S1/adata_ADT.h5ad \
+  --save_path Results/adata/PRAGA/HT/S1/PRAGA_HT_S1.h5ad \
+  --method PRAGA \
+  --dataset Human_Tonsils/S1 \
+  --cluster_nums 4
 
-# # Human_Tonsils S2
-# echo "Processing Human_Tonsils S2..."
-# python Scripts/vertical_integration/PRAGA/run_praga.py \
-#   --data_type 10x \
-#   --RNA_path Dataset/withGT/RNA_ADT/Human_Tonsils/S2/adata_RNA.h5ad \
-#   --ADT_path Dataset/withGT/RNA_ADT/Human_Tonsils/S2/adata_ADT.h5ad \
-#   --save_path Results/adata/PRAGA/HT/S2/PRAGA_HT_S2.h5ad \
-#   --method PRAGA \
-#   --dataset Human_Tonsils/S2 \
-#   --cluster_nums 5
+# Human_Tonsils S2
+echo "Processing Human_Tonsils S2..."
+python Scripts/vertical_integration/PRAGA/run_praga.py \
+  --data_type 10x \
+  --RNA_path Dataset/withGT/RNA_ADT/Human_Tonsils/S2/adata_RNA.h5ad \
+  --ADT_path Dataset/withGT/RNA_ADT/Human_Tonsils/S2/adata_ADT.h5ad \
+  --save_path Results/adata/PRAGA/HT/S2/PRAGA_HT_S2.h5ad \
+  --method PRAGA \
+  --dataset Human_Tonsils/S2 \
+  --cluster_nums 5
 
-# # Human_Tonsils S3
-# echo "Processing Human_Tonsils S3..."
-# python Scripts/vertical_integration/PRAGA/run_praga.py \
-#   --data_type 10x \
-#   --RNA_path Dataset/withGT/RNA_ADT/Human_Tonsils/S3/adata_RNA.h5ad \
-#   --ADT_path Dataset/withGT/RNA_ADT/Human_Tonsils/S3/adata_ADT.h5ad \
-#   --save_path Results/adata/PRAGA/HT/S3/PRAGA_HT_S3.h5ad \
-#   --method PRAGA \
-#   --dataset Human_Tonsils/S3 \
-#   --cluster_nums 5
+# Human_Tonsils S3
+echo "Processing Human_Tonsils S3..."
+python Scripts/vertical_integration/PRAGA/run_praga.py \
+  --data_type 10x \
+  --RNA_path Dataset/withGT/RNA_ADT/Human_Tonsils/S3/adata_RNA.h5ad \
+  --ADT_path Dataset/withGT/RNA_ADT/Human_Tonsils/S3/adata_ADT.h5ad \
+  --save_path Results/adata/PRAGA/HT/S3/PRAGA_HT_S3.h5ad \
+  --method PRAGA \
+  --dataset Human_Tonsils/S3 \
+  --cluster_nums 5
 
-# # === woGT RNA+ADT Datasets ===
+# === woGT RNA+ADT Datasets ===
 
-# echo "Processing Mouse_Thymus datasets..."
+echo "Processing Mouse_Thymus datasets..."
 
-# # Mouse_Thymus datasets
-# for thymus_id in 1 2 3 4; do
-#     echo "Processing Mouse_Thymus${thymus_id}..."
-#     python Scripts/vertical_integration/PRAGA/run_praga.py \
-#       --data_type Stereo-CITE-seq \
-#       --RNA_path Dataset/woGT/RNA_ADT/Mouse_Thymus/Mouse_Thymus${thymus_id}/adata_RNA.h5ad \
-#       --ADT_path Dataset/woGT/RNA_ADT/Mouse_Thymus/Mouse_Thymus${thymus_id}/adata_ADT.h5ad \
-#       --save_path Results/adata/PRAGA/Mouse_Thymus/Thymus${thymus_id}/PRAGA_MT_Thymus${thymus_id}.h5ad \
-#       --method PRAGA \
-#       --dataset Mouse_Thymus/Mouse_Thymus${thymus_id} \
-#       --cluster_nums 8
-# done
+# Mouse_Thymus datasets
+for thymus_id in 1 2 3 4; do
+    echo "Processing Mouse_Thymus${thymus_id}..."
+    python Scripts/vertical_integration/PRAGA/run_praga.py \
+      --data_type Stereo-CITE-seq \
+      --RNA_path Dataset/woGT/RNA_ADT/Mouse_Thymus/Mouse_Thymus${thymus_id}/adata_RNA.h5ad \
+      --ADT_path Dataset/woGT/RNA_ADT/Mouse_Thymus/Mouse_Thymus${thymus_id}/adata_ADT.h5ad \
+      --save_path Results/adata/PRAGA/Mouse_Thymus/Thymus${thymus_id}/PRAGA_MT_Thymus${thymus_id}.h5ad \
+      --method PRAGA \
+      --dataset Mouse_Thymus/Mouse_Thymus${thymus_id} \
+      --cluster_nums 8
+done
 
-# echo "Processing Mouse_Spleen datasets..."
+echo "Processing Mouse_Spleen datasets..."
 
-# # Mouse_Spleen datasets
-# for spleen_id in 1 2; do
-#     echo "Processing Mouse_Spleen${spleen_id}..."
-#     python Scripts/vertical_integration/PRAGA/run_praga.py \
-#       --data_type SPOTS \
-#       --RNA_path Dataset/woGT/RNA_ADT/Mouse_Spleen/Mouse_Spleen${spleen_id}/adata_RNA.h5ad \
-#       --ADT_path Dataset/woGT/RNA_ADT/Mouse_Spleen/Mouse_Spleen${spleen_id}/adata_ADT.h5ad \
-#       --save_path Results/adata/PRAGA/Mouse_Spleen/Spleen${spleen_id}/PRAGA_MS_Spleen${spleen_id}.h5ad \
-#       --method PRAGA \
-#       --dataset Mouse_Spleen/Mouse_Spleen${spleen_id} \
-#       --cluster_nums 5
-# done
+# Mouse_Spleen datasets
+for spleen_id in 1 2; do
+    echo "Processing Mouse_Spleen${spleen_id}..."
+    python Scripts/vertical_integration/PRAGA/run_praga.py \
+      --data_type SPOTS \
+      --RNA_path Dataset/woGT/RNA_ADT/Mouse_Spleen/Mouse_Spleen${spleen_id}/adata_RNA.h5ad \
+      --ADT_path Dataset/woGT/RNA_ADT/Mouse_Spleen/Mouse_Spleen${spleen_id}/adata_ADT.h5ad \
+      --save_path Results/adata/PRAGA/Mouse_Spleen/Spleen${spleen_id}/PRAGA_MS_Spleen${spleen_id}.h5ad \
+      --method PRAGA \
+      --dataset Mouse_Spleen/Mouse_Spleen${spleen_id} \
+      --cluster_nums 5
+done
 
-# # === RNA+ATAC Datasets ===
+# === RNA+ATAC Datasets ===
 
-# echo "Processing Mouse_Embryos RNA+ATAC datasets..."
+echo "Processing Mouse_Embryos RNA+ATAC datasets..."
 
-# # Check if Mouse_Embryos datasets exist
-# if [ -d "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1" ]; then
-#     # E11: 8 clusters
-#     if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E11/adata_RNA.h5ad" ]; then
-#         echo "Processing Mouse_Embryos_S1 E11..."
-#         python Scripts/vertical_integration/PRAGA/run_praga.py \
-#           --data_type MISAR \
-#           --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E11/adata_RNA.h5ad \
-#           --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E11/adata_ATAC.h5ad \
-#           --save_path Results/adata/PRAGA/MISAR_S1/E11/PRAGA_MISAR_S1_E11.h5ad \
-#           --method PRAGA \
-#           --dataset Mouse_Embryos_S1/E11 \
-#           --cluster_nums 8
-#     fi
+# Check if Mouse_Embryos datasets exist
+if [ -d "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1" ]; then
+    # E11: 8 clusters
+    if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E11/adata_RNA.h5ad" ]; then
+        echo "Processing Mouse_Embryos_S1 E11..."
+        python Scripts/vertical_integration/PRAGA/run_praga.py \
+          --data_type MISAR \
+          --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E11/adata_RNA.h5ad \
+          --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E11/adata_ATAC.h5ad \
+          --save_path Results/adata/PRAGA/MISAR_S1/E11/PRAGA_MISAR_S1_E11.h5ad \
+          --method PRAGA \
+          --dataset Mouse_Embryos_S1/E11 \
+          --cluster_nums 8
+    fi
     
-#     # E13: 12 clusters
-#     if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E13/adata_RNA.h5ad" ]; then
-#         echo "Processing Mouse_Embryos_S1 E13..."
-#         python Scripts/vertical_integration/PRAGA/run_praga.py \
-#           --data_type MISAR \
-#           --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E13/adata_RNA.h5ad \
-#           --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E13/adata_ATAC.h5ad \
-#           --save_path Results/adata/PRAGA/MISAR_S1/E13/PRAGA_MISAR_S1_E13.h5ad \
-#           --method PRAGA \
-#           --dataset Mouse_Embryos_S1/E13 \
-#           --cluster_nums 12
-#     fi
+    # E13: 12 clusters
+    if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E13/adata_RNA.h5ad" ]; then
+        echo "Processing Mouse_Embryos_S1 E13..."
+        python Scripts/vertical_integration/PRAGA/run_praga.py \
+          --data_type MISAR \
+          --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E13/adata_RNA.h5ad \
+          --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E13/adata_ATAC.h5ad \
+          --save_path Results/adata/PRAGA/MISAR_S1/E13/PRAGA_MISAR_S1_E13.h5ad \
+          --method PRAGA \
+          --dataset Mouse_Embryos_S1/E13 \
+          --cluster_nums 12
+    fi
     
-#     # E15: 12 clusters
-#     if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E15/adata_RNA.h5ad" ]; then
-#         echo "Processing Mouse_Embryos_S1 E15..."
-#         python Scripts/vertical_integration/PRAGA/run_praga.py \
-#           --data_type MISAR \
-#           --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E15/adata_RNA.h5ad \
-#           --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E15/adata_ATAC.h5ad \
-#           --save_path Results/adata/PRAGA/MISAR_S1/E15/PRAGA_MISAR_S1_E15.h5ad \
-#           --method PRAGA \
-#           --dataset Mouse_Embryos_S1/E15 \
-#           --cluster_nums 12
-#     fi
+    # E15: 12 clusters
+    if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E15/adata_RNA.h5ad" ]; then
+        echo "Processing Mouse_Embryos_S1 E15..."
+        python Scripts/vertical_integration/PRAGA/run_praga.py \
+          --data_type MISAR \
+          --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E15/adata_RNA.h5ad \
+          --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E15/adata_ATAC.h5ad \
+          --save_path Results/adata/PRAGA/MISAR_S1/E15/PRAGA_MISAR_S1_E15.h5ad \
+          --method PRAGA \
+          --dataset Mouse_Embryos_S1/E15 \
+          --cluster_nums 12
+    fi
     
-#     # E18: 14 clusters
-#     if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E18/adata_RNA.h5ad" ]; then
-#         echo "Processing Mouse_Embryos_S1 E18..."
-#         python Scripts/vertical_integration/PRAGA/run_praga.py \
-#           --data_type MISAR \
-#           --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E18/adata_RNA.h5ad \
-#           --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E18/adata_ATAC.h5ad \
-#           --save_path Results/adata/PRAGA/MISAR_S1/E18/PRAGA_MISAR_S1_E18.h5ad \
-#           --method PRAGA \
-#           --dataset Mouse_Embryos_S1/E18 \
-#           --cluster_nums 14
-#     fi
-# fi
+    # E18: 14 clusters
+    if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E18/adata_RNA.h5ad" ]; then
+        echo "Processing Mouse_Embryos_S1 E18..."
+        python Scripts/vertical_integration/PRAGA/run_praga.py \
+          --data_type MISAR \
+          --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E18/adata_RNA.h5ad \
+          --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S1/E18/adata_ATAC.h5ad \
+          --save_path Results/adata/PRAGA/MISAR_S1/E18/PRAGA_MISAR_S1_E18.h5ad \
+          --method PRAGA \
+          --dataset Mouse_Embryos_S1/E18 \
+          --cluster_nums 14
+    fi
+fi
 
-# if [ -d "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2" ]; then
-#     # E11: 13 clusters
-#     if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E11/adata_RNA.h5ad" ]; then
-#         echo "Processing Mouse_Embryos_S2 E11..."
-#         python Scripts/vertical_integration/PRAGA/run_praga.py \
-#           --data_type MISAR \
-#           --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E11/adata_RNA.h5ad \
-#           --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E11/adata_ATAC.h5ad \
-#           --save_path Results/adata/PRAGA/MISAR_S2/E11/PRAGA_MISAR_S2_E11.h5ad \
-#           --method PRAGA \
-#           --dataset Mouse_Embryos_S2/E11 \
-#           --cluster_nums 13
-#     fi
+if [ -d "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2" ]; then
+    # E11: 13 clusters
+    if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E11/adata_RNA.h5ad" ]; then
+        echo "Processing Mouse_Embryos_S2 E11..."
+        python Scripts/vertical_integration/PRAGA/run_praga.py \
+          --data_type MISAR \
+          --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E11/adata_RNA.h5ad \
+          --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E11/adata_ATAC.h5ad \
+          --save_path Results/adata/PRAGA/MISAR_S2/E11/PRAGA_MISAR_S2_E11.h5ad \
+          --method PRAGA \
+          --dataset Mouse_Embryos_S2/E11 \
+          --cluster_nums 13
+    fi
     
-#     # E13: 14 clusters
-#     if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E13/adata_RNA.h5ad" ]; then
-#         echo "Processing Mouse_Embryos_S2 E13..."
-#         python Scripts/vertical_integration/PRAGA/run_praga.py \
-#           --data_type MISAR \
-#           --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E13/adata_RNA.h5ad \
-#           --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E13/adata_ATAC.h5ad \
-#           --save_path Results/adata/PRAGA/MISAR_S2/E13/PRAGA_MISAR_S2_E13.h5ad \
-#           --method PRAGA \
-#           --dataset Mouse_Embryos_S2/E13 \
-#           --cluster_nums 14
-#     fi
+    # E13: 14 clusters
+    if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E13/adata_RNA.h5ad" ]; then
+        echo "Processing Mouse_Embryos_S2 E13..."
+        python Scripts/vertical_integration/PRAGA/run_praga.py \
+          --data_type MISAR \
+          --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E13/adata_RNA.h5ad \
+          --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E13/adata_ATAC.h5ad \
+          --save_path Results/adata/PRAGA/MISAR_S2/E13/PRAGA_MISAR_S2_E13.h5ad \
+          --method PRAGA \
+          --dataset Mouse_Embryos_S2/E13 \
+          --cluster_nums 14
+    fi
     
-#     # E15: 15 clusters
-#     if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E15/adata_RNA.h5ad" ]; then
-#         echo "Processing Mouse_Embryos_S2 E15..."
-#         python Scripts/vertical_integration/PRAGA/run_praga.py \
-#           --data_type MISAR \
-#           --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E15/adata_RNA.h5ad \
-#           --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E15/adata_ATAC.h5ad \
-#           --save_path Results/adata/PRAGA/MISAR_S2/E15/PRAGA_MISAR_S2_E15.h5ad \
-#           --method PRAGA \
-#           --dataset Mouse_Embryos_S2/E15 \
-#           --cluster_nums 15
-#     fi
+    # E15: 15 clusters
+    if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E15/adata_RNA.h5ad" ]; then
+        echo "Processing Mouse_Embryos_S2 E15..."
+        python Scripts/vertical_integration/PRAGA/run_praga.py \
+          --data_type MISAR \
+          --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E15/adata_RNA.h5ad \
+          --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E15/adata_ATAC.h5ad \
+          --save_path Results/adata/PRAGA/MISAR_S2/E15/PRAGA_MISAR_S2_E15.h5ad \
+          --method PRAGA \
+          --dataset Mouse_Embryos_S2/E15 \
+          --cluster_nums 15
+    fi
     
-#     # E18: 16 clusters
-#     if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E18/adata_RNA.h5ad" ]; then
-#         echo "Processing Mouse_Embryos_S2 E18..."
-#         python Scripts/vertical_integration/PRAGA/run_praga.py \
-#           --data_type MISAR \
-#           --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E18/adata_RNA.h5ad \
-#           --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E18/adata_ATAC.h5ad \
-#           --save_path Results/adata/PRAGA/MISAR_S2/E18/PRAGA_MISAR_S2_E18.h5ad \
-#           --method PRAGA \
-#           --dataset Mouse_Embryos_S2/E18 \
-#           --cluster_nums 16
-#     fi
-# fi
+    # E18: 16 clusters
+    if [ -f "Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E18/adata_RNA.h5ad" ]; then
+        echo "Processing Mouse_Embryos_S2 E18..."
+        python Scripts/vertical_integration/PRAGA/run_praga.py \
+          --data_type MISAR \
+          --RNA_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E18/adata_RNA.h5ad \
+          --ATAC_path Dataset/withGT/RNA_ATAC/Mouse_Embryos_S2/E18/adata_ATAC.h5ad \
+          --save_path Results/adata/PRAGA/MISAR_S2/E18/PRAGA_MISAR_S2_E18.h5ad \
+          --method PRAGA \
+          --dataset Mouse_Embryos_S2/E18 \
+          --cluster_nums 16
+    fi
+fi
 
 # echo "Processing Mouse_Brain RNA+ATAC datasets..."
 

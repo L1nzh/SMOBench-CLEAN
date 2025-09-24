@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Comprehensive AnnData Structure Checker for SMOBench Integration Results
-Validates all integration methods with their specific dataset support
+Updated for standardized Results structure
 """
 
 import os
@@ -14,13 +14,13 @@ import warnings
 warnings.filterwarnings('ignore')
 
 class SMOBenchStructureChecker:
-    """Comprehensive structure checker for all SMOBench integration methods"""
+    """Comprehensive structure checker for standardized SMOBench integration methods"""
     
     def __init__(self, base_dir="/home/zhenghong/SMOBench-CLEAN"):
-        self.base_dir = base_dir
-        self.results_dir = os.path.join(base_dir, "Results", "adata")
+        self.base_dir = Path(base_dir)
+        self.results_dir = self.base_dir / "Results" / "adata"
         
-        # Define method-specific dataset support
+        # Define method-specific dataset support (based on user specifications)
         self.method_support = {
             "SpatialGlue": {
                 "vertical": ["HLN", "HT", "MISAR_S1", "MISAR_S2", "Mouse_Thymus", "Mouse_Spleen", "Mouse_Brain"],
@@ -28,14 +28,14 @@ class SMOBenchStructureChecker:
                 "data_types": ["RNA_ADT", "RNA_ATAC"]
             },
             "SpaMV": {
-                "vertical": ["HLN", "HT", "MISAR_S1", "MISAR_S2", "Mouse_Thymus", "Mouse_Spleen"],
+                "vertical": ["HLN", "HT", "MISAR_S1", "MISAR_S2", "Mouse_Thymus", "Mouse_Spleen", "Mouse_Brain"],
                 "horizontal": ["HLN", "HT", "MISAR_S1", "MISAR_S2", "Mouse_Thymus", "Mouse_Spleen"],
-                "data_types": ["RNA_ADT", "RNA_ATAC"]  # No Mouse_Brain
+                "data_types": ["RNA_ADT", "RNA_ATAC"]
             },
             "CANDIES": {
-                "vertical": ["HLN", "HT", "MISAR_S1", "MISAR_S2", "Mouse_Spleen"],
+                "vertical": ["HLN", "HT", "MISAR_S1", "MISAR_S2", "Mouse_Thymus", "Mouse_Spleen", "Mouse_Brain"],
                 "horizontal": ["HLN", "HT", "MISAR_S1", "MISAR_S2", "Mouse_Spleen"],
-                "data_types": ["RNA_ADT", "RNA_ATAC"]  # No Mouse_Thymus, Mouse_Brain
+                "data_types": ["RNA_ADT", "RNA_ATAC"]
             },
             "SpaMosaic": {
                 "vertical": ["HLN", "HT", "MISAR_S1", "MISAR_S2", "Mouse_Thymus", "Mouse_Spleen", "Mouse_Brain"],
@@ -43,9 +43,9 @@ class SMOBenchStructureChecker:
                 "data_types": ["RNA_ADT", "RNA_ATAC"]
             },
             "PRAGA": {
-                "vertical": ["HLN", "HT", "Mouse_Spleen"],
+                "vertical": ["HLN", "HT", "MISAR_S1", "MISAR_S2", "Mouse_Thymus", "Mouse_Spleen", "Mouse_Brain"],
                 "horizontal": ["HLN", "HT", "Mouse_Spleen"],
-                "data_types": ["RNA_ADT"]  # No Mouse_Thymus, Mouse_Brain, MISAR
+                "data_types": ["RNA_ADT"]
             },
             "PRESENT": {
                 "vertical": ["HLN", "HT", "MISAR_S1", "MISAR_S2", "Mouse_Thymus", "Mouse_Spleen", "Mouse_Brain"],
@@ -60,21 +60,21 @@ class SMOBenchStructureChecker:
             "SpaMultiVAE": {
                 "vertical": ["HLN", "HT", "Mouse_Thymus", "Mouse_Spleen"],
                 "horizontal": ["HLN", "HT", "Mouse_Thymus", "Mouse_Spleen"],
-                "data_types": ["RNA_ADT"]  # Only RNA+ADT
+                "data_types": ["RNA_ADT"]
             }
         }
         
         # Expected clustering methods
         self.clustering_methods = ["mclust", "louvain", "leiden", "kmeans"]
         
-        # Dataset slice configurations
+        # Dataset slice configurations  
         self.dataset_slices = {
             "HLN": ["A1", "D1"],
             "HT": ["S1", "S2", "S3"],
             "MISAR_S1": ["E11", "E13", "E15", "E18"],
             "MISAR_S2": ["E11", "E13", "E15", "E18"],
-            "Mouse_Thymus": ["Mouse_Thymus1", "Mouse_Thymus2", "Mouse_Thymus3", "Mouse_Thymus4"],
-            "Mouse_Spleen": ["Dataset1_Mouse_Spleen1", "Dataset2_Mouse_Spleen2"],
+            "Mouse_Thymus": ["Thymus1", "Thymus2", "Thymus3", "Thymus4"],
+            "Mouse_Spleen": ["Spleen1", "Spleen2"],
             "Mouse_Brain": ["ATAC", "H3K27ac", "H3K27me3", "H3K4me3"]
         }
         
@@ -83,6 +83,20 @@ class SMOBenchStructureChecker:
             "HLN": 10, "HT": 5, "MISAR_S1": 12, "MISAR_S2": 14,
             "Mouse_Thymus": 8, "Mouse_Spleen": 5, "Mouse_Brain": 18
         }
+    
+    def get_standardized_file_path(self, method_name, dataset, slice_name, integration_type):
+        """Generate standardized file path using new naming convention"""
+        
+        if integration_type == "vertical":
+            # Vertical: Results/adata/vertical_integration/{Method}/{Dataset}/{Slice}/{Method}_{Dataset}_{Slice}.h5ad
+            filename = f"{method_name}_{dataset}_{slice_name}.h5ad"
+            file_path = self.results_dir / "vertical_integration" / method_name / dataset / slice_name / filename
+        else:
+            # Horizontal: Results/adata/horizontal_integration/{Method}/{Dataset}/{Method}_{Dataset}_horizontal.h5ad
+            filename = f"{method_name}_{dataset}_horizontal.h5ad"
+            file_path = self.results_dir / "horizontal_integration" / method_name / dataset / filename
+        
+        return filename, file_path
     
     def validate_adata_structure(self, file_path, method_name, dataset_name):
         """Validate individual AnnData file structure"""
@@ -97,7 +111,7 @@ class SMOBenchStructureChecker:
             "issues": []
         }
         
-        if not os.path.exists(file_path):
+        if not file_path.exists():
             result["issues"].append("File not found")
             return result
         
@@ -178,7 +192,7 @@ class SMOBenchStructureChecker:
         return result
     
     def check_method_files(self, method_name):
-        """Check all files for a specific method"""
+        """Check all files for a specific method using standardized paths"""
         print(f"\n{'='*60}")
         print(f"Checking {method_name}")
         print(f"{'='*60}")
@@ -192,7 +206,6 @@ class SMOBenchStructureChecker:
         
         # Check vertical integration
         print(f"\nVertical Integration:")
-        vertical_dir = os.path.join(self.results_dir, "vertical_integration", method_name)
         
         for dataset in method_config.get("vertical", []):
             print(f"\n  Dataset: {dataset}")
@@ -201,16 +214,8 @@ class SMOBenchStructureChecker:
             for slice_name in self.dataset_slices.get(dataset, []):
                 total_expected += 1
                 
-                # Determine file path based on method-specific rules
-                if method_name == "PRAGA" and dataset == "Mouse_Brain":
-                    file_pattern = f"{method_name}_Mouse_Brain_Mouse_Brain_{slice_name}.h5ad"
-                    file_path = os.path.join(vertical_dir, dataset, f"Mouse_Brain_{slice_name}", file_pattern)
-                elif method_name == "PRAGA":
-                    file_pattern = f"{method_name}_{dataset}_{slice_name}.h5ad"
-                    file_path = os.path.join(vertical_dir, dataset, slice_name, file_pattern)
-                else:
-                    file_pattern = f"{method_name}_{dataset}_{slice_name}.h5ad"
-                    file_path = os.path.join(vertical_dir, dataset, slice_name, file_pattern)
+                # Generate standardized file path
+                filename, file_path = self.get_standardized_file_path(method_name, dataset, slice_name, "vertical")
                 
                 result = self.validate_adata_structure(file_path, method_name, dataset)
                 dataset_results[slice_name] = result
@@ -245,13 +250,11 @@ class SMOBenchStructureChecker:
         
         # Check horizontal integration
         print(f"\nHorizontal Integration:")
-        horizontal_dir = os.path.join(self.results_dir, "horizontal_integration", method_name)
         
         for dataset in method_config.get("horizontal", []):
             total_expected += 1
             
-            file_pattern = f"{method_name}_{dataset}_fusion.h5ad"
-            file_path = os.path.join(horizontal_dir, dataset, "fusion", file_pattern)
+            filename, file_path = self.get_standardized_file_path(method_name, dataset, None, "horizontal")
             
             result = self.validate_adata_structure(file_path, method_name, dataset)
             results["horizontal"][dataset] = result
@@ -292,10 +295,10 @@ class SMOBenchStructureChecker:
         return results, total_expected, total_found, total_valid
     
     def run_comprehensive_check(self):
-        """Run comprehensive check for all methods"""
-        print("SMOBench Comprehensive AnnData Structure Check")
+        """Run comprehensive check for all methods using standardized structure"""
+        print("SMOBench Comprehensive AnnData Structure Check (Standardized)")
         print("="*80)
-        print("Checking all integration methods with method-specific dataset support")
+        print("Checking all integration methods with standardized file structure")
         
         overall_stats = {}
         grand_total_expected = 0
@@ -333,12 +336,18 @@ class SMOBenchStructureChecker:
         print(f"{'TOTAL':<15} {grand_total_expected:<10} {grand_total_found:<8} {grand_total_valid:<8} {grand_total_valid/grand_total_expected*100:<11.1f}%")
         
         # Method support summary
-        print(f"\nMethod Dataset Support:")
+        print(f"\nMethod Dataset Support (Standardized Structure):")
         for method, config in self.method_support.items():
             vertical_count = len(config.get("vertical", []))
             horizontal_count = len(config.get("horizontal", []))
             data_types = ", ".join(config.get("data_types", []))
-            print(f"  {method}: {vertical_count}V + {horizontal_count}H datasets ({data_types})")
+            
+            # Calculate total files expected
+            total_vertical = sum(len(self.dataset_slices.get(d, [])) for d in config.get("vertical", []))
+            total_horizontal = horizontal_count
+            total_expected = total_vertical + total_horizontal
+            
+            print(f"  {method}: {vertical_count}V + {horizontal_count}H datasets ({data_types}) - {total_expected} files expected")
         
         # Issues summary
         print(f"\nRequired Actions:")
@@ -350,6 +359,12 @@ class SMOBenchStructureChecker:
             print(f"  - Verify method-specific embeddings are correctly stored in obsm")
         else:
             print(f"  - All integration results are complete and valid!")
+        
+        print(f"\nStandardized Structure Benefits:")
+        print(f"  - Consistent naming: {{Method}}_{{Dataset}}_{{Slice}}.h5ad")
+        print(f"  - Clean directory structure without redundant subdirectories")
+        print(f"  - Simplified evaluation script development")
+        print(f"  - Easy batch processing and method comparison")
         
         return overall_stats
 

@@ -62,8 +62,11 @@ backup/
 
 # Development and Claude Code files
 CLAUDE.md
+docs/
 environment.yml
 morning_report.md
 run_spatialglue_robust.py
 monitor_progress.sh
 FINAL_RESULTS_SUMMARY.md
+Results_backup/
+*.tar.gz

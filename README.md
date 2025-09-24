@@ -1,5 +1,7 @@
 ## Framework Overview
 
+![SMOBench Framework](Framework/FrameWork.jpg)
+
 **Integration Tasks:**
 - **Vertical Integration**: Cross-modality integration within the same sample (RNA+ADT, RNA+ATAC)
 - **Horizontal Integration**: Cross-sample integration with batch effect removal

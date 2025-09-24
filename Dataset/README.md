@@ -2,8 +2,6 @@
 
 Multi-modal spatial omics datasets for benchmarking spatial integration methods.
 
-**Note**: Due to large file sizes, datasets are not included in the GitHub repository. Download from Google Drive: https://drive.google.com/drive/u/1/folders/11zYh27BK9QuqU7zObApCYSzSEMqHS0G6
-
 ## Dataset Structure
 
 ### With Ground Truth (withGT/)

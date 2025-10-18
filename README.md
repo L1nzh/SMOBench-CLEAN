@@ -13,7 +13,7 @@
 - **Batch Effect Removal (BER)**: Cross-batch mixing metrics (horizontal/mosaic only)
 
 **Methods Evaluated:**
-CANDIES, COSMOS, PRAGA, PRESENT, SpaMV, SpaMosaic, SpatialGlue, SpaMultiVAE
+CANDIES, COSMOS, PRAGA, PRESENT, SpaMV, SpaMosaic, SpatialGlue, SpaMultiVAE, SpaFusion, SMOPCA
 
 **Clustering Methods:**
 Leiden, Louvain, K-means, Mclust

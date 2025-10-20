@@ -595,7 +595,7 @@ plotBestMethodsScatter <- function(aggregated_scores, methods_pal, subtitle_text
       size = `Overall Score`,
       shape = Datatype
     ) +
-    # Add error bars (no filtering - show all raw error bars)
+    # Add error bars (no filtering - show all raw error bars, length * 3)
     geom_errorbar(
       aes(
         ymin = `Bio Conservation` - BioC_SE,

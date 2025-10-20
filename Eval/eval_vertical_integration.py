@@ -25,9 +25,17 @@ except ImportError as e:
     print(f"Warning: src.clustering not available ({e}), using simple implementation")
     from src.clustering_simple import knn_adj_matrix
 
-# Dataset classification
-WITHGT_DATASETS = ['HLN', 'HT', 'MISAR_S1', 'MISAR_S2']  # ME_S1, ME_S2 renamed to MISAR_S1, MISAR_S2
-WOGT_DATASETS = ['Mouse_Thymus', 'Mouse_Spleen', 'Mouse_Brain']
+# Dataset classification based on Dataset/withGT and Dataset/woGT directory structure
+WITHGT_DATASETS = ['HLN', 'HT', 'MISAR_S1', 'MISAR_S2']  # From Dataset/withGT
+WOGT_DATASETS = ['Mouse_Thymus', 'Mouse_Spleen', 'Mouse_Brain']  # From Dataset/woGT
+
+# Dataset type mapping for GT loading
+WITHGT_DATASET_TYPES = {
+    'HLN': 'RNA_ADT',           # Human_Lymph_Nodes
+    'HT': 'RNA_ADT',            # Human_Tonsils  
+    'MISAR_S1': 'RNA_ATAC',     # Mouse_Embryos_S1
+    'MISAR_S2': 'RNA_ATAC'      # Mouse_Embryos_S2
+}
 
 # Integration methods
 METHODS = ['CANDIES', 'COSMOS', 'PRAGA', 'PRESENT', 'SpaMV', 'SpaMosaic', 'SpatialGlue', 'SpaMultiVAE']
@@ -149,19 +157,13 @@ def process_single_result(result_path, method_name, dataset_name, slice_name, ou
         # Create adjacency matrix
         adj_matrix = knn_adj_matrix(embeddings)
         
-        # Get ground truth if available - use Spatial_Label from the result file itself
-        if 'Spatial_Label' in adata.obs and dataset_name in WITHGT_DATASETS:
-            y_GT_raw = adata.obs['Spatial_Label']
-            # Convert to numeric if categorical
-            if hasattr(y_GT_raw, 'cat'):
-                y_GT = y_GT_raw.cat.codes.values
-            elif str(y_GT_raw.dtype).startswith('category'):
-                import pandas as pd
-                y_GT = pd.Categorical(y_GT_raw).codes
-            else:
-                y_GT = y_GT_raw.values
-            # Ensure it's a numeric numpy array
-            y_GT = np.asarray(y_GT, dtype=int)
+        # Get ground truth if available - load from original dataset for consistency
+        # This ensures all methods are evaluated fairly regardless of whether they preserve Spatial_Label
+        if dataset_name in WITHGT_DATASETS:
+            y_GT = get_ground_truth_labels(dataset_name, slice_name)
+            if y_GT is not None:
+                # Ensure it's a numeric numpy array
+                y_GT = np.asarray(y_GT, dtype=int)
         else:
             y_GT = None
         

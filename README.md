@@ -24,6 +24,7 @@ Leiden, Louvain, K-means, Mclust
 - **Methods/**: Integration method implementations
 - **Scripts/**: Execution workflows for integration and evaluation
 - **Eval/**: Evaluation framework and metrics calculation
+- **Draw/**: Visualization scripts for results analysis
 - **Results/**: Integration outputs and evaluation results
 - **Utils/**: Shared utilities and clustering interface
 
@@ -31,7 +32,8 @@ Leiden, Louvain, K-means, Mclust
 
 1. **Integration**: Run methods using scripts in `Scripts/`
 2. **Evaluation**: Use evaluation scripts in `Eval/`
-3. **Results**: Find processed outputs in `Results/`
+3. **Visualization**: Generate plots using scripts in `Draw/`
+4. **Results**: Find processed outputs in `Results/`
 
 ## Data Access
 

@@ -43,8 +43,18 @@ loadSummaryData <- function(results_dir = "Results/evaluation/vertical_integrati
 #' @return Data frame formatted for fmsb radarchart
 prepareRadarData <- function(summary_data, dataset_name) {
   
-  # Get all 8 methods (assuming they are consistent across clustering methods)
-  methods <- rownames(summary_data[[1]])
+  # Derive the union of methods across all clustering summaries to ensure consistency
+  # Determine all methods present across clustering summaries
+  method_sets <- lapply(summary_data, rownames)
+  methods <- unique(unlist(method_sets))
+  # Preserve the ordering from the first available summary, append any remaining in alphabetical order
+  if (length(method_sets) > 0) {
+    primary_order <- method_sets[[1]]
+    extra_methods <- setdiff(methods, primary_order)
+    methods <- c(primary_order, sort(extra_methods))
+  } else {
+    methods <- character(0)
+  }
   clustering_methods <- names(summary_data)
   
   # Create data frame with methods as columns

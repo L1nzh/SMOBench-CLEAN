@@ -6,6 +6,8 @@ Uses interval trees and hash tables for improved time complexity
 
 import numpy as np
 import pandas as pd
+import scipy.sparse as sp
+import scanpy as sc
 from collections import defaultdict
 import re
 
@@ -209,7 +211,6 @@ def fuse_atac_data_optimized(adatas, dataset_names):
         new_matrix = np.column_stack(aggregated_data)
         
         # Create new AnnData object
-        import scanpy as sc
         new_adata = sc.AnnData(
             X=new_matrix,
             obs=adata.obs.copy(),
@@ -219,33 +220,29 @@ def fuse_atac_data_optimized(adatas, dataset_names):
         aggregated_adatas.append(new_adata)
         print(f"      {adata.shape[1]} -> {new_adata.shape[1]} peaks")
     
-    # Manually merge data (now all datasets have same peak count)
+    # Final merge after all datasets have identical peak set
     try:
-        import scipy.sparse as sp
-        X_list = []
-        obs_list = []
-        
-        for i, adata in enumerate(aggregated_adatas):
-            X_list.append(adata.X)
-            obs_df = adata.obs.copy()
-            obs_df['batch'] = dataset_names[i]
+        X_list, obs_list = [], []
+        for i, ad in enumerate(aggregated_adatas):
+            # stabilize IDs
+            ad = ad.copy()
+            ad.obs.index = [f"{dataset_names[i]}:{x}" for x in ad.obs_names]
+            X_list.append(ad.X)
+            obs_df = ad.obs.copy()
+            obs_df["batch"] = dataset_names[i]
             obs_list.append(obs_df)
-        
-        merged_X = sp.vstack(X_list) if hasattr(X_list[0], 'toarray') else np.vstack(X_list)
-        # Convert to CSR format for h5ad compatibility
-        if hasattr(merged_X, 'tocsr'):
-            merged_X = merged_X.tocsr()
-        merged_obs = pd.concat(obs_list, ignore_index=True)
-        
-        merged_adata = sc.AnnData(
-            X=merged_X,
-            obs=merged_obs,
-            var=aggregated_adatas[0].var.copy()
-        )
-        
+            aggregated_adatas[i] = ad
+
+        merged_X = sp.vstack(X_list).tocsr() if hasattr(X_list[0], "tocsr") else np.vstack(X_list)
+        merged_obs = pd.concat(obs_list, axis=0)
+        merged_var = aggregated_adatas[0].var.copy()
+
+        merged_adata = sc.AnnData(X=merged_X, obs=merged_obs, var=merged_var)
+        merged_adata.obs_names_make_unique()
+        merged_adata.var_names_make_unique()
+
         print(f"    Final merge: {merged_adata.n_obs} cells, {merged_adata.n_vars} peaks")
         return merged_adata
-        
     except Exception as e:
         print(f"    Merge failed: {e}")
         return None

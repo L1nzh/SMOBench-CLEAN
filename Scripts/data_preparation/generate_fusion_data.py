@@ -13,6 +13,59 @@ warnings.filterwarnings('ignore')
 # Import optimized peak fusion utilities
 from peak_fusion_utils import fuse_atac_data_optimized
 
+# NEW: robust row-wise merger that preserves obs_names and obsm['spatial']
+def _merge_filtered_adatas(filtered_adatas, dataset_names):
+    import numpy as np
+    import pandas as pd
+    import scipy.sparse as sp
+    import scanpy as sc
+
+    X_list, obs_list, spatial_list = [], [], []
+    for i, ad in enumerate(filtered_adatas):
+        ad = ad.copy()
+        # stable global ID: "<batch>:<barcode>"
+        ad.obs.index = [f"{dataset_names[i]}:{x}" for x in ad.obs_names]
+        # record
+        X_list.append(ad.X)
+        obs_df = ad.obs.copy()
+        obs_df["batch"] = dataset_names[i]
+        obs_list.append(obs_df)
+        # collect spatial if present
+        if "spatial" in ad.obsm:
+            coords = np.asarray(ad.obsm["spatial"], dtype=float)
+            spatial_list.append(coords)
+        else:
+            spatial_list.append(None)
+        # writeback
+        filtered_adatas[i] = ad
+
+    # stack X
+    merged_X = sp.vstack(X_list).tocsr() if hasattr(X_list[0], "tocsr") else np.vstack(X_list)
+    # IMPORTANT: do NOT ignore_index -> keep the IDs we just set
+    merged_obs = pd.concat(obs_list, axis=0)
+
+    # use the first .var as template (all filtered share same features & order)
+    merged_var = filtered_adatas[0].var.copy()
+    for col in ["gene_ids", "feature_types", "genome"]:
+        if col in merged_var.columns:
+            merged_var[col] = merged_var[col].astype(str)
+
+    merged = sc.AnnData(X=merged_X, obs=merged_obs, var=merged_var)
+
+    # stitch spatial if every part has it
+    if all(s is not None for s in spatial_list):
+        merged.obsm["spatial"] = np.vstack(spatial_list)
+
+    merged.obs_names_make_unique()
+    merged.var_names_make_unique()
+    return merged
+
+def _sanity_check(adata, name=""):
+    assert adata.X.shape[0] == adata.n_obs and adata.X.shape[1] == adata.n_vars, f"{name}: X shape mismatch"
+    if "spatial" in adata.obsm:
+        s = adata.obsm["spatial"]
+        assert s.shape[0] == adata.n_obs and s.shape[1] == 2, f"{name}: spatial shape error"
+
 def fuse_rna_data(adatas, dataset_names):
     """Fuse RNA data from multiple datasets"""
     print(f"  Fusing RNA data...")
@@ -37,6 +90,10 @@ def fuse_rna_data(adatas, dataset_names):
             # Ensure unique observation and variable names
             filtered_adata.obs_names_make_unique()
             filtered_adata.var_names_make_unique()
+            # OPTIONAL: align critical var columns across datasets
+            for col in ["gene_ids", "feature_types", "genome"]:
+                if col not in filtered_adata.var.columns:
+                    filtered_adata.var[col] = pd.Series(index=filtered_adata.var_names, dtype="object")
             # Validate data integrity
             assert filtered_adata.shape[0] > 0 and filtered_adata.shape[1] > 0
             assert hasattr(filtered_adata.X, 'shape')
@@ -45,34 +102,8 @@ def fuse_rna_data(adatas, dataset_names):
             print(f"    Dataset {i} filtering failed: {e}")
             return None
     
-    # Manually merge datasets
     try:
-        # Merge expression matrices
-        import scipy.sparse as sp
-        X_list = []
-        obs_list = []
-        
-        for i, adata in enumerate(filtered_adatas):
-            X_list.append(adata.X)
-            # Add batch information
-            obs_df = adata.obs.copy()
-            obs_df['batch'] = dataset_names[i]
-            obs_list.append(obs_df)
-        
-        # Vertically concatenate matrices
-        merged_X = sp.vstack(X_list)
-        # Convert to CSR format for h5ad compatibility
-        if hasattr(merged_X, 'tocsr'):
-            merged_X = merged_X.tocsr()
-        merged_obs = pd.concat(obs_list, ignore_index=True)
-        
-        # Create merged AnnData object
-        merged_adata = sc.AnnData(
-            X=merged_X,
-            obs=merged_obs,
-            var=filtered_adatas[0].var.copy()
-        )
-        
+        merged_adata = _merge_filtered_adatas(filtered_adatas, dataset_names)
     except Exception as e:
         print(f"    Manual merge failed: {e}")
         return None
@@ -149,6 +180,10 @@ def fuse_adt_data(adatas, dataset_names):
                     filtered_adata.var_names = new_var_names
                     filtered_adata.obs_names_make_unique()
                     filtered_adata.var_names_make_unique()
+                    # OPTIONAL: align critical var columns across datasets
+                    for col in ["gene_ids", "feature_types", "genome"]:
+                        if col not in filtered_adata.var.columns:
+                            filtered_adata.var[col] = pd.Series(index=filtered_adata.var_names, dtype="object")
                     # Validate data integrity
                     assert filtered_adata.shape[0] > 0 and filtered_adata.shape[1] > 0
                     assert hasattr(filtered_adata.X, 'shape')
@@ -169,6 +204,10 @@ def fuse_adt_data(adatas, dataset_names):
                 # Ensure unique names
                 filtered_adata.obs_names_make_unique()
                 filtered_adata.var_names_make_unique()
+                # OPTIONAL: align critical var columns across datasets
+                for col in ["gene_ids", "feature_types", "genome"]:
+                    if col not in filtered_adata.var.columns:
+                        filtered_adata.var[col] = pd.Series(index=filtered_adata.var_names, dtype="object")
                 # Validate data integrity
                 assert filtered_adata.shape[0] > 0 and filtered_adata.shape[1] > 0
                 assert hasattr(filtered_adata.X, 'shape')
@@ -183,32 +222,7 @@ def fuse_adt_data(adatas, dataset_names):
     
     # Manually merge data
     try:
-        # Merge expression matrices
-        import scipy.sparse as sp
-        X_list = []
-        obs_list = []
-        
-        for i, adata in enumerate(filtered_adatas):
-            X_list.append(adata.X)
-            # Add batch information
-            obs_df = adata.obs.copy()
-            obs_df['batch'] = dataset_names[i]
-            obs_list.append(obs_df)
-        
-        # Vertically concatenate matrices
-        merged_X = sp.vstack(X_list)
-        # Convert to CSR format for h5ad compatibility
-        if hasattr(merged_X, 'tocsr'):
-            merged_X = merged_X.tocsr()
-        merged_obs = pd.concat(obs_list, ignore_index=True)
-        
-        # Create merged AnnData object
-        merged_adata = sc.AnnData(
-            X=merged_X,
-            obs=merged_obs,
-            var=filtered_adatas[0].var.copy()
-        )
-        
+        merged_adata = _merge_filtered_adatas(filtered_adatas, dataset_names)
     except Exception as e:
         print(f"    Manual merge failed: {e}")
         return None
@@ -433,6 +447,7 @@ def generate_all_fusion():
                     output_dir = base_path / fusion_type / group_info['data_type']
                     output_dir.mkdir(parents=True, exist_ok=True)
                     output_file = output_dir / f"{group_name}_Fusion_{modality}.h5ad"
+                    _sanity_check(merged_adata, name=f"{group_name}_{modality}")
                     merged_adata.write(output_file)
                     print(f"    Saved: {output_file}")
                     generated_files.append(f"{fusion_type}/{group_info['data_type']}/{group_name}_Fusion_{modality}.h5ad")

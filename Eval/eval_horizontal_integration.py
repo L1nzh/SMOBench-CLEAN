@@ -7,6 +7,7 @@ Evaluates horizontal integration methods using three dimensions: SC (Spatial Coh
 import os
 import sys
 import argparse
+from pathlib import Path
 import pandas as pd
 import numpy as np
 import scanpy as sc
@@ -21,38 +22,51 @@ sys.path.insert(0, current_dir)
 # Import evaluation functions
 from src.demo import eval_horizontal_integration, calculate_horizontal_dataset_summary, save_evaluation_results
 
+try:
+    from src.clustering import knn_adj_matrix
+except ImportError:
+    from src.clustering_simple import knn_adj_matrix
+
 # Dataset classification (same as vertical integration)
 WITHGT_DATASETS = ['HLN', 'HT', 'MISAR_S1', 'MISAR_S2']
 WOGT_DATASETS = ['Mouse_Thymus', 'Mouse_Spleen', 'Mouse_Brain']
 
-# Integration methods (same as vertical integration)
-METHODS = ['CANDIES', 'COSMOS', 'PRAGA', 'PRESENT', 'SpaMV', 'SpaMosaic', 'SpatialGlue', 'SpaMultiVAE']
+# Integration methods (subset to evaluate; previously generated methods kept below)
+METHODS = [
+    'CANDIES',
+    'COSMOS',
+    'PRAGA',
+    'PRESENT',
+    'SpaMV',
+    'SpaMosaic',
+    'SpatialGlue',
+    'SpaMultiVAE',
+    'SpaBalance',
+    'SpaMI',
+    'SpaFusion',
+]
 
 # Method-dataset compatibility for horizontal integration
 HORIZONTAL_METHOD_DATASET_COMPATIBILITY = {
-    # SpatialGlue: 垂直7+水平7 - 支持所有数据集
+    # SpatialGlue: supports all datasets for horizontal integration
     'SpatialGlue': ['HLN', 'HT', 'MISAR_S1', 'MISAR_S2', 'Mouse_Thymus', 'Mouse_Spleen', 'Mouse_Brain'],
-    
-    # SpaMV: 垂直7+水平6，水平没有mouse brain
-    'SpaMV': ['HLN', 'HT', 'MISAR_S1', 'MISAR_S2', 'Mouse_Thymus', 'Mouse_Spleen'],
-    
-    # CANDIES: 垂直7+水平5，水平没有mouse thymus/mouse brain
-    'CANDIES': ['HLN', 'HT', 'MISAR_S1', 'MISAR_S2', 'Mouse_Spleen'],
-    
-    # SpaMosaic: 垂直7+水平7 - 支持所有数据集
+    # SpaMosaic: supports all datasets
     'SpaMosaic': ['HLN', 'HT', 'MISAR_S1', 'MISAR_S2', 'Mouse_Thymus', 'Mouse_Spleen', 'Mouse_Brain'],
-    
-    # PRAGA: 垂直7+水平3，水平没有mouse thymus/mouse brain/mouse embryo
-    'PRAGA': ['HLN', 'HT', 'Mouse_Spleen'],
-    
-    # PRESENT: 垂直7+水平7 - 支持所有数据集
+    # PRESENT: supports all datasets
     'PRESENT': ['HLN', 'HT', 'MISAR_S1', 'MISAR_S2', 'Mouse_Thymus', 'Mouse_Spleen', 'Mouse_Brain'],
-    
-    # COSMOS: 垂直7+水平7 - 支持所有数据集
+    # COSMOS: supports all datasets
     'COSMOS': ['HLN', 'HT', 'MISAR_S1', 'MISAR_S2', 'Mouse_Thymus', 'Mouse_Spleen', 'Mouse_Brain'],
-    
-    # SpaMultiVAE: 垂直3+水平3，垂直和水平只支持RNA_ADT
-    'SpaMultiVAE': ['HLN', 'HT', 'Mouse_Thymus', 'Mouse_Spleen']
+    # SpaMV: does not support Mouse Brain
+    'SpaMV': ['HLN', 'HT', 'MISAR_S1', 'MISAR_S2', 'Mouse_Thymus', 'Mouse_Spleen'],
+    # CANDIES: does not support Mouse Thymus / Mouse Brain
+    'CANDIES': ['HLN', 'HT', 'MISAR_S1', 'MISAR_S2', 'Mouse_Spleen'],
+    # PRAGA: supports only HLN/HT/Mouse Spleen
+    'PRAGA': ['HLN', 'HT', 'Mouse_Spleen'],
+    # SpaMultiVAE: only RNA_ADT datasets
+    'SpaMultiVAE': ['HLN', 'HT', 'Mouse_Thymus', 'Mouse_Spleen'],
+    'SpaBalance': ['HLN', 'HT', 'MISAR_S1', 'MISAR_S2', 'Mouse_Spleen'],
+    'SpaMI': ['HLN', 'HT', 'Mouse_Spleen', 'Mouse_Thymus'],
+    'SpaFusion': ['HLN', 'HT', 'Mouse_Spleen'],
 }
 
 # Clustering methods
@@ -193,8 +207,8 @@ def evaluate_horizontal_integration_methods(
     
     # Process each method
     for method_name in METHODS:
-        method_dir = os.path.join(input_base_dir, method_name)
-        if not os.path.exists(method_dir):
+        method_dir = Path(input_base_dir) / method_name
+        if not method_dir.exists():
             print(f"Method directory not found: {method_dir}")
             continue
         
@@ -206,8 +220,8 @@ def evaluate_horizontal_integration_methods(
         
         # Process each dataset
         for dataset_name in os.listdir(method_dir):
-            dataset_path = os.path.join(method_dir, dataset_name)
-            if not os.path.isdir(dataset_path):
+            dataset_path = method_dir / dataset_name
+            if not dataset_path.is_dir():
                 continue
             
             # Check method-dataset compatibility for horizontal integration
@@ -219,12 +233,16 @@ def evaluate_horizontal_integration_methods(
             print(f"\n  Dataset: {dataset_name}")
             
             # Load horizontal integration result file
-            h5ad_file = f"{method_name}_{dataset_name}_horizontal.h5ad"
-            h5ad_path = os.path.join(dataset_path, h5ad_file)
-            
-            if not os.path.exists(h5ad_path):
-                print(f"    File not found: {h5ad_path}")
-                continue
+            expected_file = dataset_path / f"{method_name}_{dataset_name}_horizontal.h5ad"
+            if expected_file.exists():
+                h5ad_path = expected_file
+            else:
+                candidates = sorted(dataset_path.rglob("*.h5ad"))
+                if not candidates:
+                    print(f"    File not found in {dataset_path}")
+                    continue
+                h5ad_path = candidates[0]
+                print(f"    Using alternative file: {h5ad_path.name}")
             
             if test_mode and files_processed >= max_test_files:
                 print(f"    Test mode: stopping after {max_test_files} files")
@@ -293,20 +311,32 @@ def evaluate_horizontal_integration_methods(
                             print(f"    Warning: No spatial coordinates found, using first 2 embedding dimensions")
                             spatial_coords = embeddings[:, :2]
                         
-                        # Create adjacency matrix (simplified)
-                        n_cells = len(y_pred)
-                        adj_matrix = sparse.eye(n_cells, format='csr')
+                        # Align lengths across arrays if needed
+                        lengths = [
+                            len(y_pred),
+                            embeddings.shape[0],
+                            spatial_coords.shape[0],
+                        ]
+                        if batch_labels is not None:
+                            lengths.append(len(batch_labels))
+                        if y_GT is not None:
+                            lengths.append(len(y_GT))
                         
-                        # Align ground truth if available
-                        if y_GT is not None and len(y_GT) != len(y_pred):
-                            min_len = min(len(y_GT), len(y_pred))
-                            print(f"    Warning: GT length mismatch. Truncating to {min_len}")
-                            y_GT = y_GT[:min_len]
+                        min_len = min(lengths)
+                        max_len = max(lengths)
+                        
+                        if min_len != max_len:
+                            print(f"    Warning: data length mismatch detected (min={min_len}, max={max_len}). Truncating to {min_len}")
                             y_pred = y_pred[:min_len]
                             embeddings = embeddings[:min_len]
                             spatial_coords = spatial_coords[:min_len]
-                            batch_labels = batch_labels[:min_len] if batch_labels is not None else None
-                            adj_matrix = adj_matrix[:min_len, :min_len]
+                            if batch_labels is not None:
+                                batch_labels = batch_labels[:min_len]
+                            if y_GT is not None:
+                                y_GT = y_GT[:min_len]
+                        
+                        # Build adjacency matrix from embeddings for graph-based metrics
+                        adj_matrix = knn_adj_matrix(embeddings)
                         
                         # Evaluate with three dimensions
                         print(f"    Evaluating {clustering_method} clustering...")

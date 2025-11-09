@@ -9,10 +9,27 @@ from pathlib import Path
 def check_file_shape(file_path):
     """Get h5ad file shape"""
     try:
+        import scanpy as sc
+        ad = sc.read_h5ad(file_path, backed=None)
+        return (ad.n_obs, ad.n_vars)
+    except Exception:
+        pass
+    try:
         with h5py.File(file_path, 'r') as f:
             if 'X' in f:
-                return f['X'].shape
-    except:
+                dset = f['X']
+                shape = getattr(dset, 'shape', None)
+                if shape is not None and len(shape) == 2:
+                    return shape
+            if 'X/indptr' in f and 'var/_index' in f:
+                n_obs = f['X/indptr'].shape[0] - 1
+                n_vars = f['var/_index'].shape[0]
+                return (n_obs, n_vars)
+            if 'X/data' in f and 'X/indptr' in f:
+                n_obs = f['X/indptr'].shape[0] - 1
+                n_vars = f['X/data'].shape[0]
+                return (n_obs, n_vars)
+    except Exception:
         pass
     return None
 

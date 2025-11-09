@@ -38,11 +38,35 @@ WITHGT_DATASET_TYPES = {
 }
 
 # Integration methods
-METHODS = ['CANDIES', 'COSMOS', 'PRAGA', 'PRESENT', 'SpaMV', 'SpaMosaic', 'SpatialGlue', 'SpaMultiVAE']
+METHODS = [
+    'SMOPCA',
+    # Legacy methods already evaluated (left commented to avoid re-processing):
+    # 'CANDIES',
+    # 'COSMOS',
+    # 'PRAGA',
+    # 'PRESENT',
+    # 'SpaMV',
+    # 'SpaMosaic',
+    # 'SpatialGlue',
+    # 'SpaMultiVAE',
+    # 'SpaBalance',
+    # 'SpaMI',
+    # 'SpaFusion',
+]
 
-# Method-dataset compatibility (SpaMultiVAE only supports RNA_ADT datasets)
+# Method-dataset compatibility (used to skip unsupported combinations)
 METHOD_DATASET_COMPATIBILITY = {
-    'SpaMultiVAE': ['HLN', 'HT', 'Mouse_Thymus', 'Mouse_Spleen']  # Only RNA_ADT datasets (withGT + woGT)
+    'SpaMultiVAE': ['HLN', 'HT', 'Mouse_Thymus', 'Mouse_Spleen'],  # Only RNA_ADT datasets (withGT + woGT)
+    'SpaFusion': ['HLN', 'HT', 'Mouse_Thymus', 'Mouse_Spleen'],    # SpaFusion currently supports RNA+ADT datasets
+    'SMOPCA': [
+        'HLN',
+        'HT',
+        'MISAR_S1',
+        'MISAR_S2',
+        'Mouse_Brain',
+        'Mouse_Spleen',
+        'Mouse_Thymus',
+    ],
 }
 
 # Clustering methods

@@ -8,13 +8,13 @@ import glob
 import pandas as pd
 import numpy as np
 import argparse
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 
 # Import functions from vertical integration
 from generate_final_results import (
-    normalize_metric_value, 
-    aggregate_by_dataset,
-    save_results
+    normalize_metric_value,
+    save_results,
+    DATASET_TYPES,
 )
 
 # Horizontal integration specific constants
@@ -24,6 +24,29 @@ HORIZONTAL_BIOC_METRICS_WITHGT = ['ARI', 'NMI', 'asw_celltype', 'graph_clisi']
 HORIZONTAL_BIOC_METRICS_WOGT = ['Davies-Bouldin Index', 'Silhouette Coefficient', 'Calinski-Harabaz Index']
 
 LOWER_IS_BETTER = ['Davies-Bouldin Index', 'Geary C']
+
+METHOD_DATASET_COMPATIBILITY = {
+    'SpatialGlue': ['HLN', 'HT', 'MISAR_S1', 'MISAR_S2', 'Mouse_Thymus', 'Mouse_Spleen', 'Mouse_Brain'],
+    'SpaMosaic': ['HLN', 'HT', 'MISAR_S1', 'MISAR_S2', 'Mouse_Thymus', 'Mouse_Spleen', 'Mouse_Brain'],
+    'PRESENT': ['HLN', 'HT', 'MISAR_S1', 'MISAR_S2', 'Mouse_Thymus', 'Mouse_Spleen', 'Mouse_Brain'],
+    'COSMOS': ['HLN', 'HT', 'MISAR_S1', 'MISAR_S2', 'Mouse_Thymus', 'Mouse_Spleen', 'Mouse_Brain'],
+    'SpaMV': ['HLN', 'HT', 'MISAR_S1', 'MISAR_S2', 'Mouse_Thymus', 'Mouse_Spleen'],
+    'CANDIES': ['HLN', 'HT', 'MISAR_S1', 'MISAR_S2', 'Mouse_Spleen'],
+    'PRAGA': ['HLN', 'HT', 'Mouse_Spleen'],
+    'SpaMultiVAE': ['HLN', 'HT', 'Mouse_Thymus', 'Mouse_Spleen'],
+    'SpaFusion': ['HLN', 'HT', 'Mouse_Thymus', 'Mouse_Spleen'],
+    'SpaBalance': ['HLN', 'HT', 'Mouse_Thymus', 'Mouse_Spleen'],
+    'SpaMI': ['HLN', 'HT', 'Mouse_Thymus', 'Mouse_Spleen'],
+}
+
+ALL_METHODS = sorted(METHOD_DATASET_COMPATIBILITY.keys())
+DATASET_GROUPS = OrderedDict([
+    ("RNA_ADT_withGT", ["HLN", "HT"]),
+    ("RNA_ADT_woGT", ["Mouse_Thymus", "Mouse_Spleen"]),
+    ("RNA_ATAC_withGT", ["MISAR_S1", "MISAR_S2"]),
+    ("RNA_ATAC_woGT", ["Mouse_Brain"]),
+])
+DATASET_ORDER = [dataset for group in DATASET_GROUPS.values() for dataset in group]
 
 def calculate_horizontal_normalized_scores(df):
     """
@@ -102,57 +125,44 @@ def calculate_horizontal_normalized_scores(df):
     
     return df
 
-def create_horizontal_summary_tables(df, clustering_method):
+def create_horizontal_summary_tables(df, methods_order):
     """
-    Create summary tables for horizontal integration
-    
-    Parameters:
-    -----------
-    df : pd.DataFrame
-        Processed results DataFrame
-    clustering_method : str
-        Clustering method name
-    
-    Returns:
-    --------
-    tuple : (rna_adt_table, rna_atac_table, comprehensive_table)
+    Create grouped summary tables for horizontal integration results.
+    Returns an OrderedDict mapping group names to summary DataFrames.
     """
-    
+    tables = OrderedDict()
+
     if df.empty:
-        return pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
-    
-    # Split by data type
-    rna_adt_df = df[df['Dataset_Type'] == 'RNA_ADT'].copy() if 'Dataset_Type' in df.columns else pd.DataFrame()
-    rna_atac_df = df[df['Dataset_Type'] == 'RNA_ATAC'].copy() if 'Dataset_Type' in df.columns else pd.DataFrame()
-    
-    def create_summary_table(subset_df, table_name):
+        for group_name, datasets in DATASET_GROUPS.items():
+            tables[group_name] = pd.DataFrame(index=methods_order, columns=datasets + ["Average"], dtype=float)
+        tables["Comprehensive"] = pd.DataFrame(index=methods_order, columns=DATASET_ORDER + ["Average"], dtype=float)
+        return tables
+
+    df = df[df["Dataset"].isin(DATASET_ORDER)].copy()
+    methods_present = sorted(set(df["Method"].unique()))
+    full_methods = sorted(set(methods_order) | set(methods_present))
+
+    def build_table(subset_df, datasets):
         if subset_df.empty:
-            return pd.DataFrame()
-        
-        # Pivot table with Method as rows, Dataset as columns, Final_Score as values
-        pivot_df = subset_df.pivot_table(
-            index='Method',
-            columns='Dataset', 
-            values='Final_Score',
-            aggfunc='first'  # Take first value if duplicates
-        )
-        
-        # Calculate overall score (mean across datasets)
-        if not pivot_df.empty:
-            pivot_df['Overall_Score'] = pivot_df.mean(axis=1)
-            # Sort by overall score (descending)
-            pivot_df = pivot_df.sort_values('Overall_Score', ascending=False)
-            # Round to 3 decimal places
-            pivot_df = pivot_df.round(3)
-        
-        return pivot_df
-    
-    # Create summary tables
-    rna_adt_table = create_summary_table(rna_adt_df, "RNA_ADT")
-    rna_atac_table = create_summary_table(rna_atac_df, "RNA_ATAC") 
-    comprehensive_table = create_summary_table(df, "Comprehensive")
-    
-    return rna_adt_table, rna_atac_table, comprehensive_table
+            pivot = pd.DataFrame(index=full_methods, columns=datasets, dtype=float)
+        else:
+            pivot = subset_df.pivot_table(
+                index="Method",
+                columns="Dataset",
+                values="Final_Score",
+                aggfunc="first"
+            )
+            pivot = pivot.reindex(index=full_methods)
+            pivot = pivot.reindex(columns=datasets)
+        pivot["Average"] = pivot.mean(axis=1, skipna=True)
+        return pivot.round(3)
+
+    for group_name, datasets in DATASET_GROUPS.items():
+        subset = df[df["Dataset"].isin(datasets)]
+        tables[group_name] = build_table(subset, datasets)
+
+    tables["Comprehensive"] = build_table(df, DATASET_ORDER)
+    return tables
 
 def process_horizontal_results(results_dir):
     """
@@ -203,9 +213,21 @@ def process_horizontal_results(results_dir):
             
             # Extract metadata from filename
             method_name = parts[0]
-            dataset_name = parts[1]
             
-            # For horizontal integration, format is: METHOD_DATASET_horizontal_CLUSTERING_GT.csv
+            if len(parts) < 4:
+                print(f"Warning: Cannot parse filename {filename}")
+                continue
+            
+            if "horizontal" not in parts:
+                continue
+            horizontal_idx = parts.index("horizontal")
+            if horizontal_idx <= 1:
+                print(f"Warning: Cannot determine dataset from {filename}")
+                continue
+            
+            dataset_parts = parts[1:horizontal_idx]
+            dataset_name = "_".join(dataset_parts)
+            
             if 'horizontal' in parts:
                 horizontal_idx = parts.index('horizontal')
                 if len(parts) > horizontal_idx + 1:
@@ -271,6 +293,55 @@ def process_horizontal_results(results_dir):
     
     return results_by_clustering
 
+def aggregate_horizontal_by_dataset(results_list):
+    """
+    Aggregate slice-level horizontal results to dataset level,
+    preserving SC/BioC metrics and BER components.
+    """
+    if not results_list:
+        return pd.DataFrame()
+
+    grouped = defaultdict(list)
+    for result in results_list:
+        key = (result['Method'], result['Dataset'])
+        grouped[key].append(result)
+
+    aggregated_rows = []
+    for (method, dataset), slices in grouped.items():
+        if not slices:
+            continue
+        has_gt = slices[0].get('GT_Available', False)
+        dataset_type = DATASET_TYPES.get(dataset, 'Unknown')
+        clustering = slices[0].get('Clustering', 'leiden')
+
+        aggregated = {
+            'Method': method,
+            'Dataset': dataset,
+            'Dataset_Type': dataset_type,
+            'Clustering': clustering,
+            'GT_Available': has_gt,
+            'Num_Slices': len(slices),
+        }
+
+        def add_metric(metric_name):
+            values = [slice_result.get(metric_name, np.nan) for slice_result in slices]
+            values = [v for v in values if pd.notna(v)]
+            aggregated[metric_name] = np.nanmean(values) if values else np.nan
+
+        for metric in HORIZONTAL_SC_METRICS:
+            add_metric(metric)
+
+        bioc_list = HORIZONTAL_BIOC_METRICS_WITHGT if has_gt else HORIZONTAL_BIOC_METRICS_WOGT
+        for metric in bioc_list:
+            add_metric(metric)
+
+        for metric in HORIZONTAL_BER_METRICS:
+            add_metric(metric)
+
+        aggregated_rows.append(aggregated)
+
+    return pd.DataFrame(aggregated_rows)
+
 def save_horizontal_results(final_results, output_dir):
     """
     Save horizontal integration results to files
@@ -290,21 +361,10 @@ def save_horizontal_results(final_results, output_dir):
         results['detailed_results'].to_csv(detailed_file, index=False)
         print(f"Saved detailed results: {detailed_file}")
         
-        # Save summary tables
-        if not results['rna_adt_summary'].empty:
-            rna_adt_file = os.path.join(clustering_dir, f"rna_adt_summary_{clustering_method}.csv") 
-            results['rna_adt_summary'].to_csv(rna_adt_file)
-            print(f"Saved RNA+ADT summary: {rna_adt_file}")
-        
-        if not results['rna_atac_summary'].empty:
-            rna_atac_file = os.path.join(clustering_dir, f"rna_atac_summary_{clustering_method}.csv")
-            results['rna_atac_summary'].to_csv(rna_atac_file)
-            print(f"Saved RNA+ATAC summary: {rna_atac_file}")
-        
-        if not results['comprehensive_summary'].empty:
-            comprehensive_file = os.path.join(clustering_dir, f"comprehensive_summary_{clustering_method}.csv")
-            results['comprehensive_summary'].to_csv(comprehensive_file)
-            print(f"Saved comprehensive summary: {comprehensive_file}")
+        for group_name, table in results['group_tables'].items():
+            file_path = os.path.join(clustering_dir, f"{group_name}_summary_{clustering_method}.csv")
+            table.to_csv(file_path)
+            print(f"Saved {group_name} summary: {file_path}")
 
 def generate_horizontal_evaluation():
     """
@@ -344,7 +404,7 @@ def generate_horizontal_evaluation():
         # Aggregate by dataset (horizontal integration typically has one result per dataset)
         # Convert DataFrame to list of dictionaries for aggregation
         results_list = results_by_clustering[clustering_method].to_dict('records')
-        aggregated_df = aggregate_by_dataset(results_list)
+        aggregated_df = aggregate_horizontal_by_dataset(results_list)
         
         if aggregated_df.empty:
             print(f"Warning: No aggregated results for {clustering_method}")
@@ -354,23 +414,18 @@ def generate_horizontal_evaluation():
         scored_df = calculate_horizontal_normalized_scores(aggregated_df)
         
         # Create summary tables
-        rna_adt_table, rna_atac_table, comprehensive_table = create_horizontal_summary_tables(scored_df, clustering_method)
+        group_tables = create_horizontal_summary_tables(scored_df, ALL_METHODS)
         
         # Store results
         final_results[clustering_method] = {
             'detailed_results': scored_df,
-            'rna_adt_summary': rna_adt_table,
-            'rna_atac_summary': rna_atac_table,
-            'comprehensive_summary': comprehensive_table
+            'group_tables': group_tables,
         }
         
         print(f"  Processed {len(scored_df)} dataset-level results")
-        if not rna_adt_table.empty:
-            print(f"  RNA_ADT summary: {rna_adt_table.shape[0]} methods × {rna_adt_table.shape[1]-1} datasets")
-        if not rna_atac_table.empty:
-            print(f"  RNA_ATAC summary: {rna_atac_table.shape[0]} methods × {rna_atac_table.shape[1]-1} datasets")
-        if not comprehensive_table.empty:
-            print(f"  Comprehensive summary: {comprehensive_table.shape[0]} methods × {comprehensive_table.shape[1]-1} datasets")
+        for group_name, table in group_tables.items():
+            if not table.empty:
+                print(f"  {group_name}: {table.shape[0]} methods × {table.shape[1]-1} datasets")
     
     # Save all results
     save_horizontal_results(final_results, output_dir)
@@ -387,17 +442,12 @@ def generate_horizontal_evaluation():
         print(f"\n{clustering_method.upper()} CLUSTERING RESULTS:")
         print("-" * 50)
         
-        if not final_results[clustering_method]['comprehensive_summary'].empty:
-            print(f"\nComprehensive Summary (All Supported Datasets):")
-            print(final_results[clustering_method]['comprehensive_summary'].to_string())
-        
-        if not final_results[clustering_method]['rna_adt_summary'].empty:
-            print(f"\nRNA + ADT Integration:")
-            print(final_results[clustering_method]['rna_adt_summary'].to_string())
-        
-        if not final_results[clustering_method]['rna_atac_summary'].empty:
-            print(f"\nRNA + ATAC Integration:")
-            print(final_results[clustering_method]['rna_atac_summary'].to_string())
+        for group_name, table in final_results[clustering_method]['group_tables'].items():
+            print(f"\n{group_name}:")
+            if table.empty:
+                print("No data available.")
+            else:
+                print(table.to_string())
     
     print(f"\n" + "="*80)
     print("Horizontal Integration Results Generation Complete!")

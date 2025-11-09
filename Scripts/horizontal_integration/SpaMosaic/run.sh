@@ -12,33 +12,33 @@ mkdir -p Results/adata/horizontal_integration/SpaMosaic Results/plot/horizontal_
 
 # === withGT RNA+ADT Datasets ===
 
-echo "Processing RNA+ADT datasets with ground truth..."
+# echo "Processing RNA+ADT datasets with ground truth..."
 
 # Human_Lymph_Nodes (combines A1 + D1)
-echo "Processing Human_Lymph_Nodes horizontal integration..."
-python Scripts/horizontal_integration/SpaMosaic/run_spamosaic.py \
-  --data_type horizontal \
-  --RNA_path Dataset/withGT/RNA_ADT/Human_Lymph_Nodes \
-  --ADT_path Dataset/withGT/RNA_ADT/Human_Lymph_Nodes \
-  --save_path Results/adata/horizontal_integration/SpaMosaic/HLN/fusion/SpaMosaic_HLN_fusion.h5ad \
-  --method SpaMosaic \
-  --dataset HLN \
-  --cluster_nums 10 \
-  --seed 2024 \
-  --device cuda:0
+# echo "Processing Human_Lymph_Nodes horizontal integration..."
+# python Scripts/horizontal_integration/SpaMosaic/run_spamosaic.py \
+#   --data_type horizontal \
+#   --RNA_path Dataset/withGT/RNA_ADT/Human_Lymph_Nodes \
+#   --ADT_path Dataset/withGT/RNA_ADT/Human_Lymph_Nodes \
+#   --save_path Results/adata/horizontal_integration/SpaMosaic/HLN/fusion/SpaMosaic_HLN_fusion.h5ad \
+#   --method SpaMosaic \
+#   --dataset HLN \
+#   --cluster_nums 10 \
+#   --seed 2024 \
+#   --device cuda:0
 
 # Human_Tonsils (combines S1 + S2 + S3)
-echo "Processing Human_Tonsils horizontal integration..."
-python Scripts/horizontal_integration/SpaMosaic/run_spamosaic.py \
-  --data_type horizontal \
-  --RNA_path Dataset/withGT/RNA_ADT/Human_Tonsils \
-  --ADT_path Dataset/withGT/RNA_ADT/Human_Tonsils \
-  --save_path Results/adata/horizontal_integration/SpaMosaic/HT/fusion/SpaMosaic_HT_fusion.h5ad \
-  --method SpaMosaic \
-  --dataset HT \
-  --cluster_nums 5 \
-  --seed 2024 \
-  --device cuda:0
+# echo "Processing Human_Tonsils horizontal integration..."
+# python Scripts/horizontal_integration/SpaMosaic/run_spamosaic.py \
+#   --data_type horizontal \
+#   --RNA_path Dataset/withGT/RNA_ADT/Human_Tonsils \
+#   --ADT_path Dataset/withGT/RNA_ADT/Human_Tonsils \
+#   --save_path Results/adata/horizontal_integration/SpaMosaic/HT/fusion/SpaMosaic_HT_fusion.h5ad \
+#   --method SpaMosaic \
+#   --dataset HT \
+#   --cluster_nums 5 \
+#   --seed 2024 \
+#   --device cuda:0
 
 # === withGT RNA+ATAC Datasets ===
 
@@ -72,50 +72,50 @@ python Scripts/horizontal_integration/SpaMosaic/run_spamosaic.py \
 
 # === woGT RNA+ADT Datasets ===
 
-echo "Processing RNA+ADT datasets without ground truth..."
+# echo "Processing RNA+ADT datasets without ground truth..."
 
 # Mouse_Thymus (combines multiple thymus samples)
-echo "Processing Mouse_Thymus horizontal integration..."
-python Scripts/horizontal_integration/SpaMosaic/run_spamosaic.py \
-  --data_type horizontal \
-  --RNA_path Dataset/woGT/RNA_ADT/Mouse_Thymus \
-  --ADT_path Dataset/woGT/RNA_ADT/Mouse_Thymus \
-  --save_path Results/adata/horizontal_integration/SpaMosaic/Mouse_Thymus/fusion/SpaMosaic_Mouse_Thymus_fusion.h5ad \
-  --method SpaMosaic \
-  --dataset Mouse_Thymus \
-  --cluster_nums 8 \
-  --seed 2024 \
-  --device cuda:0
+# echo "Processing Mouse_Thymus horizontal integration..."
+# python Scripts/horizontal_integration/SpaMosaic/run_spamosaic.py \
+#   --data_type horizontal \
+#   --RNA_path Dataset/woGT/RNA_ADT/Mouse_Thymus \
+#   --ADT_path Dataset/woGT/RNA_ADT/Mouse_Thymus \
+#   --save_path Results/adata/horizontal_integration/SpaMosaic/Mouse_Thymus/fusion/SpaMosaic_Mouse_Thymus_fusion.h5ad \
+#   --method SpaMosaic \
+#   --dataset Mouse_Thymus \
+#   --cluster_nums 8 \
+#   --seed 2024 \
+#   --device cuda:0
 
 # Mouse_Spleen (combines multiple spleen samples)
-echo "Processing Mouse_Spleen horizontal integration..."
-python Scripts/horizontal_integration/SpaMosaic/run_spamosaic.py \
-  --data_type horizontal \
-  --RNA_path Dataset/woGT/RNA_ADT/Mouse_Spleen \
-  --ADT_path Dataset/woGT/RNA_ADT/Mouse_Spleen \
-  --save_path Results/adata/horizontal_integration/SpaMosaic/Mouse_Spleen/fusion/SpaMosaic_Mouse_Spleen_fusion.h5ad \
-  --method SpaMosaic \
-  --dataset Mouse_Spleen \
-  --cluster_nums 5 \
-  --seed 2024 \
-  --device cuda:0
+# echo "Processing Mouse_Spleen horizontal integration..."
+# python Scripts/horizontal_integration/SpaMosaic/run_spamosaic.py \
+#   --data_type horizontal \
+#   --RNA_path Dataset/woGT/RNA_ADT/Mouse_Spleen \
+#   --ADT_path Dataset/woGT/RNA_ADT/Mouse_Spleen \
+#   --save_path Results/adata/horizontal_integration/SpaMosaic/Mouse_Spleen/fusion/SpaMosaic_Mouse_Spleen_fusion.h5ad \
+#   --method SpaMosaic \
+#   --dataset Mouse_Spleen \
+#   --cluster_nums 5 \
+#   --seed 2024 \
+#   --device cuda:0
 
 # === woGT RNA+ATAC Datasets ===
 
-echo "Processing RNA+ATAC datasets without ground truth..."
+# echo "Processing RNA+ATAC datasets without ground truth..."
 
 # Mouse_Brain (combines multiple brain modalities/regions)
-echo "Processing Mouse_Brain horizontal integration..."
-python Scripts/horizontal_integration/SpaMosaic/run_spamosaic.py \
-  --data_type horizontal \
-  --RNA_path Dataset/woGT/RNA_ATAC/Mouse_Brain \
-  --ATAC_path Dataset/woGT/RNA_ATAC/Mouse_Brain \
-  --save_path Results/adata/horizontal_integration/SpaMosaic/Mouse_Brain/fusion/SpaMosaic_Mouse_Brain_fusion.h5ad \
-  --method SpaMosaic \
-  --dataset Mouse_Brain \
-  --cluster_nums 18 \
-  --seed 2024 \
-  --device cuda:0
+# echo "Processing Mouse_Brain horizontal integration..."
+# python Scripts/horizontal_integration/SpaMosaic/run_spamosaic.py \
+#   --data_type horizontal \
+#   --RNA_path Dataset/woGT/RNA_ATAC/Mouse_Brain \
+#   --ATAC_path Dataset/woGT/RNA_ATAC/Mouse_Brain \
+#   --save_path Results/adata/horizontal_integration/SpaMosaic/Mouse_Brain/fusion/SpaMosaic_Mouse_Brain_fusion.h5ad \
+#   --method SpaMosaic \
+#   --dataset Mouse_Brain \
+#   --cluster_nums 18 \
+#   --seed 2024 \
+#   --device cuda:0
 
 echo "SpaMosaic horizontal integration processing completed!"
 echo "End time: $(date)"

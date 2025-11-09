@@ -12,29 +12,29 @@ mkdir -p Results/adata/horizontal_integration/SpatialGlue Results/plot/horizonta
 
 # === withGT RNA+ADT Fusion Datasets ===
 
-echo "Processing RNA+ADT fusion datasets with ground truth..."
+# echo "Processing RNA+ADT fusion datasets with ground truth..."
 
 # Human_Lymph_Nodes fusion (combines A1 + D1)
-echo "Processing Human_Lymph_Nodes fusion dataset..."
-python Scripts/horizontal_integration/SpatialGlue/run_SpatialGlue.py \
-  --data_type fusion \
-  --RNA_path Dataset/fusionWithGT/RNA_ADT/HLN_Fusion_RNA.h5ad \
-  --ADT_path Dataset/fusionWithGT/RNA_ADT/HLN_Fusion_ADT.h5ad \
-  --save_path Results/adata/horizontal_integration/SpatialGlue/HLN/fusion/SpatialGlue_HLN_fusion.h5ad \
-  --method SpatialGlue \
-  --dataset HLN \
-  --cluster_nums 10
+# echo "Processing Human_Lymph_Nodes fusion dataset..."
+# python Scripts/horizontal_integration/SpatialGlue/run_SpatialGlue.py \
+#   --data_type fusion \
+#   --RNA_path Dataset/fusionWithGT/RNA_ADT/HLN_Fusion_RNA.h5ad \
+#   --ADT_path Dataset/fusionWithGT/RNA_ADT/HLN_Fusion_ADT.h5ad \
+#   --save_path Results/adata/horizontal_integration/SpatialGlue/HLN/fusion/SpatialGlue_HLN_fusion.h5ad \
+#   --method SpatialGlue \
+#   --dataset HLN \
+#   --cluster_nums 10
 
 # Human_Tonsils fusion (combines S1 + S2 + S3)
-echo "Processing Human_Tonsils fusion dataset..."
-python Scripts/horizontal_integration/SpatialGlue/run_SpatialGlue.py \
-  --data_type fusion \
-  --RNA_path Dataset/fusionWithGT/RNA_ADT/HT_Fusion_RNA.h5ad \
-  --ADT_path Dataset/fusionWithGT/RNA_ADT/HT_Fusion_ADT.h5ad \
-  --save_path Results/adata/horizontal_integration/SpatialGlue/HT/fusion/SpatialGlue_HT_fusion.h5ad \
-  --method SpatialGlue \
-  --dataset HT \
-  --cluster_nums 5
+# echo "Processing Human_Tonsils fusion dataset..."
+# python Scripts/horizontal_integration/SpatialGlue/run_SpatialGlue.py \
+#   --data_type fusion \
+#   --RNA_path Dataset/fusionWithGT/RNA_ADT/HT_Fusion_RNA.h5ad \
+#   --ADT_path Dataset/fusionWithGT/RNA_ADT/HT_Fusion_ADT.h5ad \
+#   --save_path Results/adata/horizontal_integration/SpatialGlue/HT/fusion/SpatialGlue_HT_fusion.h5ad \
+#   --method SpatialGlue \
+#   --dataset HT \
+#   --cluster_nums 5
 
 # === withGT RNA+ATAC Fusion Datasets ===
 
@@ -64,46 +64,46 @@ python Scripts/horizontal_integration/SpatialGlue/run_SpatialGlue.py \
 
 # === woGT RNA+ADT Fusion Datasets ===
 
-echo "Processing RNA+ADT fusion datasets without ground truth..."
+# echo "Processing RNA+ADT fusion datasets without ground truth..."
 
 # Mouse_Thymus fusion (combines multiple thymus samples)
-echo "Processing Mouse_Thymus fusion dataset..."
-python Scripts/horizontal_integration/SpatialGlue/run_SpatialGlue.py \
-  --data_type fusion \
-  --RNA_path Dataset/fusionWoGT/RNA_ADT/Mouse_Thymus_Fusion_RNA.h5ad \
-  --ADT_path Dataset/fusionWoGT/RNA_ADT/Mouse_Thymus_Fusion_ADT.h5ad \
-  --save_path Results/adata/horizontal_integration/SpatialGlue/Mouse_Thymus/fusion/SpatialGlue_Mouse_Thymus_fusion.h5ad \
-  --method SpatialGlue \
-  --dataset Mouse_Thymus \
-  --cluster_nums 8
+# echo "Processing Mouse_Thymus fusion dataset..."
+# python Scripts/horizontal_integration/SpatialGlue/run_SpatialGlue.py \
+#   --data_type fusion \
+#   --RNA_path Dataset/fusionWoGT/RNA_ADT/Mouse_Thymus_Fusion_RNA.h5ad \
+#   --ADT_path Dataset/fusionWoGT/RNA_ADT/Mouse_Thymus_Fusion_ADT.h5ad \
+#   --save_path Results/adata/horizontal_integration/SpatialGlue/Mouse_Thymus/fusion/SpatialGlue_Mouse_Thymus_fusion.h5ad \
+#   --method SpatialGlue \
+#   --dataset Mouse_Thymus \
+#   --cluster_nums 8
 
 # Mouse_Spleen fusion (combines multiple spleen samples)
-echo "Processing Mouse_Spleen fusion dataset..."
-python Scripts/horizontal_integration/SpatialGlue/run_SpatialGlue.py \
-  --data_type fusion \
-  --RNA_path Dataset/fusionWoGT/RNA_ADT/Mouse_Spleen_Fusion_RNA.h5ad \
-  --ADT_path Dataset/fusionWoGT/RNA_ADT/Mouse_Spleen_Fusion_ADT.h5ad \
-  --save_path Results/adata/horizontal_integration/SpatialGlue/Mouse_Spleen/fusion/SpatialGlue_Mouse_Spleen_fusion.h5ad \
-  --method SpatialGlue \
-  --dataset Mouse_Spleen \
-  --cluster_nums 5
+# echo "Processing Mouse_Spleen fusion dataset..."
+# python Scripts/horizontal_integration/SpatialGlue/run_SpatialGlue.py \
+#   --data_type fusion \
+#   --RNA_path Dataset/fusionWoGT/RNA_ADT/Mouse_Spleen_Fusion_RNA.h5ad \
+#   --ADT_path Dataset/fusionWoGT/RNA_ADT/Mouse_Spleen_Fusion_ADT.h5ad \
+#   --save_path Results/adata/horizontal_integration/SpatialGlue/Mouse_Spleen/fusion/SpatialGlue_Mouse_Spleen_fusion.h5ad \
+#   --method SpatialGlue \
+#   --dataset Mouse_Spleen \
+#   --cluster_nums 5
 
 # === woGT RNA+ATAC Fusion Datasets (if available) ===
 
 # Check for Mouse_Brain fusion datasets
-if [ -f "Dataset/fusionWoGT/RNA_ATAC/Mouse_Brain_Fusion_RNA.h5ad" ]; then
-    echo "Processing Mouse_Brain fusion dataset..."
-    python Scripts/horizontal_integration/SpatialGlue/run_SpatialGlue.py \
-      --data_type fusion \
-      --RNA_path Dataset/fusionWoGT/RNA_ATAC/Mouse_Brain_Fusion_RNA.h5ad \
-      --ATAC_path Dataset/fusionWoGT/RNA_ATAC/Mouse_Brain_Fusion_ATAC.h5ad \
-      --save_path Results/adata/horizontal_integration/SpatialGlue/Mouse_Brain/fusion/SpatialGlue_Mouse_Brain_fusion.h5ad \
-      --method SpatialGlue \
-      --dataset Mouse_Brain \
-      --cluster_nums 18
-else
-    echo "Mouse_Brain fusion dataset not found, skipping..."
-fi
+# if [ -f "Dataset/fusionWoGT/RNA_ATAC/Mouse_Brain_Fusion_RNA.h5ad" ]; then
+#     echo "Processing Mouse_Brain fusion dataset..."
+#     python Scripts/horizontal_integration/SpatialGlue/run_SpatialGlue.py \
+#       --data_type fusion \
+#       --RNA_path Dataset/fusionWoGT/RNA_ATAC/Mouse_Brain_Fusion_RNA.h5ad \
+#       --ATAC_path Dataset/fusionWoGT/RNA_ATAC/Mouse_Brain_Fusion_ATAC.h5ad \
+#       --save_path Results/adata/horizontal_integration/SpatialGlue/Mouse_Brain/fusion/SpatialGlue_Mouse_Brain_fusion.h5ad \
+#       --method SpatialGlue \
+#       --dataset Mouse_Brain \
+#       --cluster_nums 18
+# else
+#     echo "Mouse_Brain fusion dataset not found, skipping..."
+# fi
 
 echo "SpatialGlue horizontal integration processing completed!"
 echo "End time: $(date)"

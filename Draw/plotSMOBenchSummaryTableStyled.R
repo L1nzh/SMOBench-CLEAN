@@ -138,6 +138,18 @@ createStyledSummaryTable <- function(aggregated_data, title_suffix = "") {
         TRUE ~ "Other"
       ),
       shape_type = ifelse(section == "Aggregate Score", "bar", "circle")
+    ) %>%
+    group_by(Metric) %>%
+    mutate(
+      metric_max = suppressWarnings(max(Score, na.rm = TRUE)),
+      metric_min = suppressWarnings(min(Score, na.rm = TRUE)),
+      range_val = metric_max - metric_min,
+      range_val = ifelse(is.finite(range_val) & range_val > 0, range_val, 1),
+      Score_scaled = ifelse(is.finite(Score), (Score - metric_min) / range_val, 0)
+    ) %>%
+    ungroup() %>%
+    mutate(
+      color_value = ifelse(section == "Aggregate Score", Score, Score_scaled)
     )
   
   # Count sections for header positioning (adjust based on GT status)
@@ -179,19 +191,19 @@ createStyledSummaryTable <- function(aggregated_data, title_suffix = "") {
   p <- ggplot() +
     # ① Spatial Coherence (orange) - improved contrast
     geom_point(data = plot_data %>% filter(section == "Spatial Coherence"),
-               aes(x = x, y = y, fill = Score), shape = 21, size = 12, color = "white", stroke = 0.5) +
+               aes(x = x, y = y, fill = color_value), shape = 21, size = 12, color = "white", stroke = 0.5) +
     scale_fill_gradient(low = "#fdd49e", high = "#d94801", limits = c(0, 1)) +
     new_scale_fill() +
     
     # ② Biological Conservation (green) - improved contrast
     geom_point(data = plot_data %>% filter(section == "Biological Conservation"),
-               aes(x = x, y = y, fill = Score), shape = 21, size = 12, color = "white", stroke = 0.5) +
+               aes(x = x, y = y, fill = color_value), shape = 21, size = 12, color = "white", stroke = 0.5) +
     scale_fill_gradient(low = "#c7e9c0", high = "#238b45", limits = c(0, 1)) +
     new_scale_fill() +
     
     # ③ Aggregate Score (blue) — bar proportional to value, improved contrast
     geom_tile(data = plot_data %>% filter(section == "Aggregate Score"),
-              aes(x = x - (1 - Score)/2, y = y, width = Score, height = 0.55, fill = Score),
+              aes(x = x - (1 - Score)/2, y = y, width = Score, height = 0.55, fill = color_value),
               color = "white", linewidth = 0.5) +
     scale_fill_gradient(low = "#c6dbef", high = "#08519c", limits = c(0, 1)) +
     
@@ -224,7 +236,7 @@ createStyledSummaryTable <- function(aggregated_data, title_suffix = "") {
     # Theme
     theme_void() +
     theme(
-      axis.text.y = element_text(hjust = 1, face = "bold", margin = margin(r = -60)),
+      axis.text.y = element_text(hjust = 0.5, face = "bold", margin = margin(r = -70)),
       legend.position = "none",
       plot.margin = margin(20, 20, 20, 20),
       plot.title = element_text(hjust = 0.5, size = 14, face = "bold")

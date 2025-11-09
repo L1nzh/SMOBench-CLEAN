@@ -74,7 +74,7 @@ def safe_import():
 # Call the safe import function
 safe_import()
 
-def calculate_ber_metrics(embeddings, batch_labels, n_neighbors=30):
+def calculate_ber_metrics(embeddings, batch_labels, n_neighbors=5):
     """
     Calculate Batch Effect Removal (BER) metrics
     
@@ -94,6 +94,8 @@ def calculate_ber_metrics(embeddings, batch_labels, n_neighbors=30):
     try:
         from sklearn.neighbors import NearestNeighbors
         from sklearn.metrics import silhouette_score
+        from scipy.sparse import csr_matrix
+        from scipy.sparse.csgraph import connected_components
         import numpy as np
         
         ber_metrics = {}
@@ -119,13 +121,27 @@ def calculate_ber_metrics(embeddings, batch_labels, n_neighbors=30):
         else:
             batch_labels_numeric = batch_labels.astype(int)
         
+        # Build kNN structure once (exclude self-neighbors)
+        knn = min(n_neighbors, len(embeddings) - 1)
+        if knn < 1:
+            return {
+                'kBET': 1.0,
+                'KNN_connectivity': 1.0,
+                'bASW': 1.0,
+                'iLISI': 1.0,
+                'PCR': 1.0
+            }
+        
+        nbrs = NearestNeighbors(n_neighbors=knn + 1).fit(embeddings)
+        distances, indices_full = nbrs.kneighbors(embeddings)
+        neighbor_indices = indices_full[:, 1:]
+        neighbor_distances = distances[:, 1:]
+        
         # 1. kBET (simplified version)
         # Measures batch mixing in local neighborhoods
-        nbrs = NearestNeighbors(n_neighbors=min(n_neighbors, len(embeddings)-1)).fit(embeddings)
-        _, indices = nbrs.kneighbors(embeddings)
         
         kbet_scores = []
-        for i, neighbors in enumerate(indices):
+        for i, neighbors in enumerate(neighbor_indices):
             neighbor_batches = batch_labels_numeric[neighbors]
             # Calculate batch distribution in neighborhood
             batch_counts = np.bincount(neighbor_batches, minlength=n_batches)
@@ -137,26 +153,32 @@ def calculate_ber_metrics(embeddings, batch_labels, n_neighbors=30):
         
         ber_metrics['kBET'] = np.mean(kbet_scores)
         
-        # 2. KNN connectivity 
-        # Measures preservation of original batch structure
+        # Build global kNN graph for connectivity/iLISI calculations
+        row_ind = np.repeat(np.arange(len(embeddings)), neighbor_indices.shape[1])
+        col_ind = neighbor_indices.flatten()
+        weights = (1.0 / (neighbor_distances.flatten() + 1e-8))
+        knn_graph = csr_matrix((weights, (row_ind, col_ind)), shape=(len(embeddings), len(embeddings)))
+        knn_graph = knn_graph.maximum(knn_graph.T)
+        
+        # 2. KNN connectivity (scIB-style: largest connected component per batch)
         connectivity_scores = []
         for i, batch in enumerate(unique_batches):
             batch_mask = batch_labels_numeric == i
-            if np.sum(batch_mask) < 2:
+            batch_size = np.sum(batch_mask)
+            if batch_size < 2:
                 continue
-                
-            batch_embeddings = embeddings[batch_mask]
-            if len(batch_embeddings) < n_neighbors:
-                connectivity_scores.append(1.0)
-                continue
-                
-            # Find neighbors within batch
-            batch_nbrs = NearestNeighbors(n_neighbors=min(n_neighbors, len(batch_embeddings)-1)).fit(batch_embeddings)
-            _, batch_indices = batch_nbrs.kneighbors(batch_embeddings)
             
-            # Calculate connectivity (simplified)
-            connectivity = len(batch_indices) / len(embeddings)
-            connectivity_scores.append(connectivity)
+            subgraph = knn_graph[batch_mask][:, batch_mask]
+            if subgraph.nnz == 0:
+                connectivity_scores.append(0.0)
+                continue
+            
+            n_components, component_labels = connected_components(subgraph, directed=False)
+            if n_components == 0:
+                connectivity_scores.append(0.0)
+                continue
+            largest = np.bincount(component_labels).max()
+            connectivity_scores.append(largest / batch_size)
         
         ber_metrics['KNN_connectivity'] = np.mean(connectivity_scores) if connectivity_scores else 0.0
         
@@ -170,7 +192,7 @@ def calculate_ber_metrics(embeddings, batch_labels, n_neighbors=30):
         
         # 4. iLISI (Integration Local Inverse Simpson Index) - simplified
         ilisi_scores = []
-        for i, neighbors in enumerate(indices):
+        for i, neighbors in enumerate(neighbor_indices):
             neighbor_batches = batch_labels_numeric[neighbors]
             batch_counts = np.bincount(neighbor_batches, minlength=n_batches)
             # Simpson index

@@ -142,23 +142,18 @@ def main(args):
     print("Training SpatialGlue model for horizontal integration...")
     start_time = time.time()
     
-    model = Train_SpatialGlue(data, datatype='fusion', device=device)
-    
-    # Enhanced training parameters for horizontal integration
-    emb = model.train(
-        lr=1e-4,        # Reduced learning rate for stability
-        max_epochs=1000, # Increased epochs for batch effect removal
-        alpha=10,       # Spatial regularization weight
-        beta=1,         # Cross-domain regularization
-        gamma=1,        # Intra-domain regularization  
-        theta=0.1,      # Adversarial weight for batch integration
-        lamda1=10,      # Enhanced for horizontal integration
-        lamda2=10,      # Enhanced for horizontal integration
-        theta1=0.1,     # Batch adversarial weight
-        theta2=0.1,     # Additional batch control
-        patience=50,    # Increased patience for convergence
-        seed=args.seed
+    datatype_flag = 'MISAR' if modality == 'ATAC' else 'fusion'
+    target_epochs = 1200 if modality == 'ATAC' else 800
+
+    model = Train_SpatialGlue(
+        data,
+        datatype=datatype_flag,
+        device=device,
+        learning_rate=1e-4,
+        epochs=target_epochs
     )
+    
+    output = model.train()
     
     end_time = time.time()
     train_time = end_time - start_time
@@ -166,7 +161,9 @@ def main(args):
 
     # === Build Result AnnData ===
     adata = adata_omics1.copy()
-    adata.obsm['SpatialGlue'] = emb
+    adata.obsm['emb_latent_omics1'] = output['emb_latent_omics1'].copy()
+    adata.obsm['emb_latent_omics2'] = output['emb_latent_omics2'].copy()
+    adata.obsm['SpatialGlue'] = output['SpatialGlue'].copy()
     adata.uns['train_time'] = train_time
     adata.uns['integration_type'] = 'horizontal'
     
@@ -175,7 +172,7 @@ def main(args):
     print(f"Detected dataset: {dataset_name}, subset: {subset_name}")
 
     # === Clustering and UMAP Generation ===
-    tools = ['mclust', 'louvain', 'leiden', 'kmeans']
+    tools = ['mclust', 'kmeans']
     
     # === Generate UMAP coordinates (store in adata, no plotting) ===
     print("Generating UMAP coordinates...")

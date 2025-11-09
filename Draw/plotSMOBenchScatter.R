@@ -330,7 +330,11 @@ getSMOBenchMethodsPal <- function() {
     "PRAGA" = "#6A3D9A",        # Purple
     "SpaMV" = "#FB9A99",        # Light red
     "PRESENT" = "#A6CEE3",      # Light blue
-    "SpaMultiVAE" = "#B2DF8A"   # Light green
+    "SpaMultiVAE" = "#B2DF8A",  # Light green
+    "SpaFusion" = "#FDBF6F",    # Soft orange
+    "SMOPCA" = "#1B9E77",       # Teal
+    "SpaMI" = "#B15928",        # Brown
+    "SpaBalance" = "#CAB2D6"    # Lavender
   )
   
   return(methods_pal)
@@ -595,11 +599,11 @@ plotBestMethodsScatter <- function(aggregated_scores, methods_pal, subtitle_text
       size = `Overall Score`,
       shape = Datatype
     ) +
-    # Add error bars (no filtering - show all raw error bars, length * 3)
+    # Add error bars (scaled by factor 2.5 for emphasis)
     geom_errorbar(
       aes(
-        ymin = `Bio Conservation` - BioC_SE,
-        ymax = `Bio Conservation` + BioC_SE
+        ymin = `Bio Conservation` - BioC_SE * 2.5,
+        ymax = `Bio Conservation` + BioC_SE * 2.5
       ),
       width = 0.02,
       alpha = 0.7,
@@ -608,8 +612,8 @@ plotBestMethodsScatter <- function(aggregated_scores, methods_pal, subtitle_text
     ) +
     geom_errorbarh(
       aes(
-        xmin = `Spatial Coherence` - SC_SE,
-        xmax = `Spatial Coherence` + SC_SE
+        xmin = `Spatial Coherence` - SC_SE * 2.5,
+        xmax = `Spatial Coherence` + SC_SE * 2.5
       ),
       height = 0.02,
       alpha = 0.7,

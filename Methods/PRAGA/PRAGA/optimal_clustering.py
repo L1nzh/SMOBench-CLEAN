@@ -16,7 +16,14 @@ class R5(nn.Module):
         self.N = 2
         self.begin = False
         self.datatype = data_type
-        self.device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
+        if arg is not None and hasattr(arg, 'device') and arg.device is not None:
+            self.device = torch.device(arg.device)
+        else:
+            self.device = torch.device(
+                f"cuda:{torch.cuda.current_device()}"
+                if torch.cuda.is_available()
+                else "cpu"
+            )
         
         self.weight = 1
         self.warmup = 99
